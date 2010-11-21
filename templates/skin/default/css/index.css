@@ -1,0 +1,67 @@
+/*
+ * Copyright © 2010 Sergey Marin
+ *
+ * Плагин Facebook: публикация в ленту страницы (page) и добавление виджетов
+ * Автор: Sergey Marin
+ * Профиль: http://livestreet.ru/profile/HangGlider/
+ * Сайт: http://sergeymarin.com
+ *
+ * GNU General Public License, version 2:
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ *
+ */
+
+#PluginFacebook {
+    width:500px;
+    margin:3em auto;
+}
+
+#PluginFacebook ul.features {
+    padding:0 10px;
+}
+#PluginFacebook ul.features li {
+    list-style:circle;
+    margin:5px;
+}
+
+#PluginFacebook .description {
+    border:1px solid silver;
+    background:#eee;
+    padding:1em;
+}
+
+#PluginFacebook .setup_block {
+    margin:2em 0;
+}
+
+#PluginFacebook .setup_block ol {
+    margin:1em;
+    list-style:decimal;
+}
+
+#PluginFacebook .setup_block li {
+    margin:1em;
+    color:#555;
+}
+
+#PluginFacebook .setup_block li.complete {
+    background:#ccffcc
+}
+
+#PluginFacebook .setup_block li strong {
+    clear:right;
+    display:block;
+    color:black;
+}
+
+#PluginFacebook .setup_block li.complete strong:after {
+    content: " ( OK )";
+}
+
+#adv { font-size:1.3em; margin:5px 0; }
+
+#facebook_fans { }
+
+#facebook_recs {
+    display:none;
+}
