@@ -27,13 +27,14 @@ $config['strategy']='STRATEGY_MAIN';
 // Параметры для Facebook //
 
 // Страница
-$config['page']['id']=NULL;
+$config['page']['id']=NULL; // page ID
+#$config['page']['url']=urlencode('http://www.facebook.com/pages/Plagin-Facebook-dla-LiveStreet/130640676993713');
 $config['page']['url']=urlencode(NULL);
 
 // Приложение
-$config['application']['id']=NULL;
-$config['application']['api']=NULL;
-$config['application']['secret']=NULL;
+$config['application']['id']=NULL; // Application ID
+$config['application']['api']=NULL; // API Key
+$config['application']['secret']=NULL; // Application Secret
 
 // Настройки блока Facebook //
 
