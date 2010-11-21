@@ -21,7 +21,7 @@ class PluginFacebook_ModuleFacebook extends Module {
 	 */
 	public function Init() {
         // facebook API
-        $path=Plugin::GetTemplateWebPath('facebook').'classes/lib/facebook-php-sdk/src/facebook.php';
+        $path=Plugin::GetPath('facebook').'classes/lib/facebook-php-sdk/src/facebook.php';
         include $path;
         
         $this->aCfg=Config::Get('plugin.facebook');
