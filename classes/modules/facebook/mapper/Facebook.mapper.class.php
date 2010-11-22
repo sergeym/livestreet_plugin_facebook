@@ -44,7 +44,7 @@ class PluginFacebook_ModuleFacebook_MapperFacebook extends Mapper {
 			date,
 			publish_id
 			)
-			VALUES(?d,  ?,	?d)
+			VALUES(?d,  ?,	?)
 		";
 		if ($iId=$this->oDb->query($sql,$topic_id,date('Y-m-d H:i:s'),$publish_id)) {
 			return $iId;
