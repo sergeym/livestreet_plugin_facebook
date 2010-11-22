@@ -1,19 +1,24 @@
 <?php
-/**
+/*
+ * Copyright © 2010 Sergey Marin
  *
- * @author Sergey Marin <http://sergeymarin.com>
+ * Плагин Facebook: публикация в ленту страницы (page) и добавление виджетов
+ * Автор: Sergey Marin
+ * Профиль: http://livestreet.ru/profile/HangGlider/
+ * Сайт: http://sergeymarin.com
+ *
+ * GNU General Public License, version 2:
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ *
  */
+if (!class_exists('Plugin')) {
+    die('Hacking attemp!');
+}
 class PluginFacebook extends Plugin {
-
-    const STRATEGY_DIRECT=1; // отправлять на стену сразу после публикации
-    const STRATEGY_MAIN=2; // отправлять когда топик появится на главной
-    const STRATEGY_RATING=3; // отправлять после получения получения определенного количества голосов
-    const STRATEGY_WAIT=4; // отсылать после таймаута
-
-        /**
-         * Активация плагина
-         * @return boolean
-         */
+    /**
+     * Активация плагина
+     * @return boolean
+     */
 	public function Activate() {
 		if (!$this->isTableExists('prefix_plugin_facebook_queue')) {
 			/**
@@ -24,19 +29,19 @@ class PluginFacebook extends Plugin {
 		return true;
 	}
 
-        /**
-         * Инициализация плагина
-         * @return void
-         */
+    /**
+     * Инициализация плагина
+     * @return void
+     */
 	public function Init() {
         $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath('facebook').'css/index.css');
         $this->Viewer_AppendScript(Plugin::GetTemplateWebPath('facebook').'js/facebook.js');
 	}
 
-        /**
-         * Деактивация плагина
-         * @return boolean
-         */
+    /**
+     * Деактивация плагина
+     * @return boolean
+     */
 	public function Deactivate() {
 		return true;
 	}
