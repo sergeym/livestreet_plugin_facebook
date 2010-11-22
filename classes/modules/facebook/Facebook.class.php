@@ -34,7 +34,7 @@ class PluginFacebook_ModuleFacebook extends Module {
         ));
 
         // Маппер
-        $this->oMapper=new PluginFacebook_ModuleFacebook_MapperFacebook($this->Database_GetConnect());
+        $this->oMapper=Engine::GetMapper(__CLASS__);
 	}
 
     /**
