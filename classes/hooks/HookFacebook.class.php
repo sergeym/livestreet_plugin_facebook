@@ -26,12 +26,16 @@ class PluginFacebook_HookFacebook extends Hook {
                 $this->AddHook("topic_show", "HookSetTopic", __CLASS__);
                 $this->AddHook("template_html_head_begin", "HookInsertOpenGraphHeaders", __CLASS__);
 
-                switch($aCnf['strategy']) {
+                switch ($aCnf['strategy']) {
                     case 'STRATEGY_RATING':
-                    case 'STRATEGY_MAIN':
-                        $this->AddHook('module_rating_votetopic_after', 'HookRatingVoteTopicAfter', __CLASS__, 2);
-                    break;
-                }
+                    $this->AddHook('module_rating_votetopic_after', 'HookRatingVoteTopicAfter', __CLASS__, 2);
+                break;
+                case 'STRATEGY_MAIN':
+                    $this->AddHook('module_rating_votetopic_after', 'HookRatingVoteTopicAfter', __CLASS__, 2);
+                    $this->AddHook('topic_add_after', 'HookRatingEditTopicAfter', __CLASS__);
+                    $this->AddHook('topic_edit_after', 'HookRatingEditTopicAfter', __CLASS__);
+                break;
+        }
         }
 
         function initAction($aVars) {
@@ -58,6 +62,18 @@ class PluginFacebook_HookFacebook extends Hook {
                 }
             }
             
+            return true;
+        }
+
+        public function HookRatingEditTopicAfter($args){
+            $oTopic = $args['oTopic'];
+            //$iValue =   $args['params'][2];
+            // можно ли опубликовать топик в Facebook
+            $bCanPublishTopic = $this->PluginFacebook_ModuleFacebook_canPublishTopic($oTopic);
+
+            if ($bCanPublishTopic == true) {
+                $this->PluginFacebook_ModuleFacebook_PublishTopic($oTopic);
+            }
             return true;
         }
 
