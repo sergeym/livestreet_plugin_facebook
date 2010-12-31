@@ -23,7 +23,7 @@ class PluginFacebook_ModuleFacebook extends Module {
         // facebook API
         $path=Plugin::GetPath('facebook').'classes/lib/facebook-php-sdk/src/facebook.php';
         include $path;
-        
+
         $this->aCfg=Config::Get('plugin.facebook');
 
         // API
@@ -38,7 +38,7 @@ class PluginFacebook_ModuleFacebook extends Module {
 	}
 
     /**
-     * Проверка настроек и наличия прав у приложения писать на стену 
+     * Проверка настроек и наличия прав у приложения писать на стену
      * @return bool
      */
     public function CheckRightsOK() {
@@ -70,7 +70,7 @@ class PluginFacebook_ModuleFacebook extends Module {
             {
                 $aResult=array(
                     'rights'=>false
-                );  
+                );
             }
         }
 
@@ -94,12 +94,12 @@ class PluginFacebook_ModuleFacebook extends Module {
             'description' => strip_tags($oTopic->GetTextShort())
         );
 
-        // Получаем список media-материалов 
+        // Получаем список media-материалов
         $aAttachment['media']=$this->getMedia($oTopic,false);
 
         // публикуем в Facebook
         $sPublishId=$this->_publish($aAttachment);
-        
+
         // записываем в опубликованные
         if ($sPublishId) {
             $this->oMapper->TopicPublish($oTopic->getId(),$sPublishId);
@@ -150,7 +150,7 @@ class PluginFacebook_ModuleFacebook extends Module {
         // сортировка по ключу, если требуется
         if ($bSort==true) ksort($aMedia);
         // отдаем без ключей
-        return array_values($aMedia); 
+        return array_values($aMedia);
     }
 
     /**
@@ -188,14 +188,14 @@ class PluginFacebook_ModuleFacebook extends Module {
         $aVideoObj=isset($obj_matches[0])?$obj_matches[0]:array();
 
         $aVideo=array();
-        
+
         if (is_array($aVideoObj)) {
             foreach($aVideoObj as $sObj) {
                 preg_match('/http:\/\/www\.youtube[^"]+/', $sObj, $video_matches);
                 $aVideo[strpos($sText,$video_matches[0])]=$video_matches[0];
             }
         }
-        
+
         return $aVideo;
     }
 
@@ -206,14 +206,14 @@ class PluginFacebook_ModuleFacebook extends Module {
      */
     public function _publish($attachment) {
         if (!$this->CheckRightsOK()) { return false; }
-          
+
         try {
             $aResult=$this->FB->api(array(
                 'method'=>'stream.publish',
                 'uid'=>$this->aCfg['page']['id'],
                 'attachment'=>$attachment
             ));
-        } catch (Exception $e){ 
+        } catch (Exception $e){
             $this->Logger_Error($e->getMessage());
             return false;
         }
@@ -231,7 +231,7 @@ class PluginFacebook_ModuleFacebook extends Module {
         $sKey='PluginFacebook_isTopicPublished_'.$oTopic->getId();
 
         $aResult=$this->Cache_Get($sKey);
-         
+
         if ($aResult && isset($aResult['bResult'])) {
             // вытаскиваем результат из кэша
             $bResult=$aResult['bResult'];
@@ -252,12 +252,11 @@ class PluginFacebook_ModuleFacebook extends Module {
     public function canPublishTopic($oTopic) {
         // если топик уже опубликован, его нельзя снова публиковать
         if ($this->isTopicPublished($oTopic)==true) { return false; }
-        
         $aCnf=Config::Get('plugin.facebook');
-
         switch ($aCnf['strategy']) {
             case 'STRATEGY_MAIN':
-                if ($oTopic->getRating()>=Config::Get('module.blog.index_good')) {
+                if ($oTopic->getRating()>=Config::Get('module.blog.index_good') ||
+                    $oTopic->getPublishIndex()) {
                     return true;
                 }
             break;
@@ -270,3 +269,4 @@ class PluginFacebook_ModuleFacebook extends Module {
         return false;
     }
 }
+?>
