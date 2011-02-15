@@ -191,8 +191,9 @@ class PluginFacebook_ModuleFacebook extends Module {
 
         if (is_array($aVideoObj)) {
             foreach($aVideoObj as $sObj) {
-                preg_match('/http:\/\/www\.youtube[^"]+/', $sObj, $video_matches);
-                $aVideo[strpos($sText,$video_matches[0])]=$video_matches[0];
+                if (preg_match('/http:\/\/www\.youtube[^"]+/', $sObj, $video_matches)) {
+                    $aVideo[strpos($sText,$video_matches[0])]=$video_matches[0];
+                }
             }
         }
 
