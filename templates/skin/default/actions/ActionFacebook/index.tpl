@@ -23,7 +23,7 @@
         С помощью этого приложения будут публиковаться топики на стену созданной страницы. Создать приложение можно <a href="http://www.facebook.com/developers/createapp.php">на этой странице</a>. Полученные Application ID, Ключ API, Application Secret необходимо записать в файл конфигурации плагина.</li>
     <li{if $facebookRightsOK} class="complete"{/if}>
         <strong>Дайте приложению необходимые права</strong>
-        <a href="http://www.facebook.com/login.php?api_key={$pluginCfg.application.api}&connect_display=popup&v=1.0&next=http://www.facebook.com/connect/login_success.html&cancel_url=http://www.facebook.com/connect/login_failure.html&fbconnect=true&return_session=true&session_key_only=true&req_perms=read_stream,publish_stream,offline_access">На этой странице</a> и <a href="http://www.facebook.com/connect/prompt_permissions.php?api_key={cfg name='plugin.facebook.application.api'}&v=1.0&next=http://www.facebook.com/connect/login_success.html?xxRESULTTOKENxx&display=popup&ext_perm=publish_stream&enable_profile_selector=1&profile_selector_ids={cfg name='plugin.facebook.page.id'}">на этой странице</a>.
+        <a href="https://graph.facebook.com/oauth/authorize?client_id=191123180907739&redirect_uri=http://www.facebook.com/connect/login_success.html&scope=read_stream,publish_stream,offline_access">На этой странице</a> и <a href="http://www.facebook.com/connect/prompt_permissions.php?api_key={cfg name='plugin.facebook.application.api'}&v=1.0&next=http://www.facebook.com/connect/login_success.html?xxRESULTTOKENxx&display=popup&ext_perm=publish_stream&enable_profile_selector=1&profile_selector_ids={cfg name='plugin.facebook.page.id'}">на этой странице</a>.
     </li>
     <li><strong>Настройте дополнительные параметры</strong>
         <ul>
