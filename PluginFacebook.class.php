@@ -36,6 +36,7 @@ class PluginFacebook extends Plugin {
 	public function Init() {
         $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath('facebook').'css/index.css');
         $this->Viewer_AppendScript(Plugin::GetTemplateWebPath('facebook').'js/facebook.js');
+        $this->Viewer_Assign('sFacebookTemplateWebPathPlugin',Plugin::GetTemplateWebPath(__CLASS__));
 	}
 
     /**

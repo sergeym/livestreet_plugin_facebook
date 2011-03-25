@@ -17,7 +17,7 @@
 }
 
 #PluginFacebook ul.features {
-    padding:0 10px;
+    padding:10px;
 }
 #PluginFacebook ul.features li {
     list-style:circle;
@@ -30,33 +30,6 @@
     padding:1em;
 }
 
-#PluginFacebook .setup_block {
-    margin:2em 0;
-}
-
-#PluginFacebook .setup_block ol {
-    margin:1em;
-    list-style:decimal;
-}
-
-#PluginFacebook .setup_block li {
-    margin:1em;
-    color:#555;
-}
-
-#PluginFacebook .setup_block li.complete {
-    background:#ccffcc
-}
-
-#PluginFacebook .setup_block li strong {
-    clear:right;
-    display:block;
-    color:black;
-}
-
-#PluginFacebook .setup_block li.complete strong:after {
-    content: " ( OK )";
-}
 
 #adv { font-size:1.3em; margin:5px 0; }
 
@@ -64,4 +37,123 @@
 
 #facebook_recs {
     display:none;
+}
+
+div#setup {
+	background: #EEEEEE;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	border-radius: 5px;
+	counter-reset: fieldsets;
+	padding: 20px;
+	}
+
+div#setup fieldset {
+	border: 1px dotted gray;
+	margin-bottom: 10px;
+	}
+
+div#setup fieldset legend { padding:5px 10px; margin:0px 10px; }
+
+div#setup ol {
+    margin:0;
+}
+
+div#setup ol li {
+	line-height: 30px;
+	list-style: none;
+	padding: 5px 10px;
+	margin-bottom: 2px;
+}
+
+div#setup label {
+	float: left;
+	font-size: 13px;
+	width: 150px;
+}
+
+div#setup input[type="text"], div#setup select {
+    width:220px;
+}
+
+.refresh {
+    background:url("../images/refresh.gif") no-repeat 3px 1px;
+}
+
+.perm {
+    background:#66ff66;
+    background:url("../images/perm.png") no-repeat 3px 1px;
+}
+
+.noperm {
+    background:#ff3333;
+    background:url("../images/noperm.png") no-repeat 3px 1px;
+}
+
+.check {
+    background:url("../images/magnifier.png") no-repeat 3px 1px;
+}
+
+#page_select_rights {
+    width:24px;
+    height:22px;
+}
+
+#screen-test, #screen-open,#screen-save,#screen-delete,#screen-save-compete,#page_permissions_warn,#no-pages-warn {
+    display:none;
+    line-height:14px;
+}
+
+#screen-test {
+    display:block;
+}
+
+#no-pages-warn, #page_permissions_warn {
+    border:1px solid red;
+    padding:10px;
+    -moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	border-radius: 5px;
+    background:#ffcccc;
+}
+
+a[target="_blank"] {
+    background:url("../images/external-small.png") no-repeat right;
+    padding-right:16px;
+
+}
+
+table.money tr td {
+    padding:10px;
+    vertical-align:top;
+}
+
+table.money tr td form {
+    margin-top:15px;
+}
+
+dl.money, dl.money dt, dl.money dd { margin: 0; padding: 0; }
+
+dl.money { width: 100%; }
+
+dl.money dt {
+    font-weight: bold;
+    float: left;
+    clear: left;
+    width: 70px;
+    margin-bottom: 1em;
+}
+
+dl.money dd {
+    float: left;
+    width: 90px;
+    margin-bottom: 1em;
+    text-align: right;
+}
+
+#page_url {
+    background:#f0efef;
+    border:1px dotted silver;
 }

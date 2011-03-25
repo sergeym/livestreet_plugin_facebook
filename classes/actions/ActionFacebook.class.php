@@ -22,11 +22,16 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         if (!$this->oUserCurrent or !$this->oUserCurrent->isAdministrator()) {
 			return $this->EventNotFound();
 		}
+
+        $sWebPluginSkin=Plugin::GetTemplateWebPath(__CLASS__);
+        $this->Viewer_Assign('sWebPluginSkin', $sWebPluginSkin);
     }
 
     protected function RegisterEvent() {
         $this->SetDefaultEvent('index');
         $this->AddEvent('index','EventIndex');
+        $this->AddEvent('ajaxtest','EventAjaxTest');
+        $this->AddEvent('ajaxsave','EventAjaxSave');
     }
 
     /**
@@ -34,28 +39,111 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
      * @return void
      */
     protected function EventIndex() {
-        if (isPost('make_test')) {
-            // тестируем. Отправлям крайний пост
-            $bMakeTest=(bool)getRequest('make_test',null,'post');
-            if (!empty($bMakeTest)) {
-                $aResult=$this->Topic_GetTopicsCollective(0,1);
-                $aTopics=array_values($aResult['collection']);
-                if (isset($aTopics[0])) {
-                    $this->PluginFacebook_ModuleFacebook_PublishTopic($aTopics[0]);
-                }
-            }
-		}
-
-        // флаг проверки прав
-        $facebookRightsOK=$this->PluginFacebook_ModuleFacebook_CheckRightsOK();
-        
+        $aConfig=$this->PluginFacebook_ModuleFacebook_GetSettings();
         // в шаблон
-        $this->Viewer_Assign('pluginCfg',Config::Get('plugin.facebook'));
-        $this->Viewer_Assign('facebookRightsOK',$facebookRightsOK);
-        $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath('facebook').'css/index.css');
+        $this->Viewer_Assign('pluginCfg',$aConfig);
+    //    $this->Viewer_Assign('facebookRightsOK',$facebookRightsOK);
+        $this->Viewer_Assign('facebookRightsOK',false);
+        //$this->Viewer_AppendStyle(Plugin::GetTemplateWebPath('facebook').'css/index.css');
         
         // меняем заголовок старницы
         $this->Viewer_AddHtmlTitle($this->Lang_Get('plugin_facebook_setup_title'));
         
+    }
+
+    protected function EventAjaxTest() {
+        $this->Viewer_SetResponseAjax();
+
+        $app_id=getRequest('app_id',null,'post');
+		$app_key=getRequest('app_key',null,'post');
+		$app_secret=getRequest('app_secret',null,'post');
+		$pageId=getRequest('page_id',null,'post');
+        $action=getRequest('action',null,'post');
+        $publish_id=getRequest('publish_id',null,'post');
+
+        $sPublishId='';$bResult=null;$aPageInfo=array();
+
+        if ($app_id && $app_key && $app_secret && $pageId) {
+
+            try {
+                $this->PluginFacebook_ModuleFacebook_UpdateMapperSettings($app_id,$app_key,$app_secret);
+
+                switch ($action) {
+                    case 'publish':
+
+                        if ($aPageInfo=$this->PluginFacebook_ModuleFacebook_GetPageInfoById($pageId,array('page_url','name'))) {
+                        
+                            $aAttachment=array(
+                                'caption' => 'Модуль Facebook - проверка. rand('.rand(0,99999).')',
+                                'name' => 'Модуль Facebook для livestreet',
+                                'href' => Config::Get('path.root.web'),
+                                'description' => 'Плагин позволяет публиковать анонсы топиков в ленту сайта на Facebook. rand('.rand(0,99999).')'
+                            );
+
+                            $sPublishId = $this->PluginFacebook_ModuleFacebook_PublishCustomAttachment($aAttachment,$pageId);
+                        }
+
+                        if ($sPublishId) {
+                            $this->Message_AddNoticeSingle('Добавлено','Не удалось добавить сообщение');
+                        } else {
+                            $this->Message_AddErrorSingle($this->Lang_Get('system_error'),'Не удалось добавить сообщение');
+                        }
+
+
+
+                    break;
+                    case 'delete':
+                        $bResult=$this->PluginFacebook_ModuleFacebook_Delete($publish_id);
+                        if ($bResult) {
+                            $this->Message_AddNoticeSingle('Успешно','Сообщение было удалено');
+                        } else {
+                            $this->Message_AddErrorSingle($this->Lang_Get('system_error'),'Не удалось удалить запись');
+                        }
+                    break;
+                }
+
+            } catch (Exception $e) {
+                $this->Message_AddErrorSingle($this->Lang_Get('system_error'),'Критическая ошибка при обработке запроса');
+            }
+        }
+
+        if ($sPublishId) {
+		    $this->Viewer_AssignAjax('sPublishId', $sPublishId);
+        }
+        
+        if ($bResult) {
+		    $this->Viewer_AssignAjax('bResult', $bResult);
+        }
+
+        if ($aPageInfo) {
+            $this->Viewer_AssignAjax('aPageInfo', $aPageInfo);
+        }
+    }
+
+    protected function EventAjaxSave() {
+        $this->Viewer_SetResponseAjax();
+		$bStateError=true;
+        $sMsg='';
+        $sMsgTitle='';
+
+        $app_id=getRequest('app_id',null,'post');
+		$app_key=getRequest('app_key',null,'post');
+		$app_secret=getRequest('app_secret',null,'post');
+		$pageId=getRequest('page_id',null,'post');
+        $action=getRequest('action',null,'post');
+        $publish_id=getRequest('publish_id',null,'post');
+
+
+        $sPublishId='';$bResult=null;
+
+        if ($app_id && $app_key && $app_secret && $pageId) {
+            $bResult=$this->PluginFacebook_ModuleFacebook_SaveSettings($app_id,$app_key,$app_secret,$pageId);
+        }
+
+        
+
+        $this->Viewer_AssignAjax('bStateError', $bStateError);
+        $this->Viewer_AssignAjax('sMsgTitle',$sMsgTitle);
+		$this->Viewer_AssignAjax('sMsg',$sMsg);
     }
 }

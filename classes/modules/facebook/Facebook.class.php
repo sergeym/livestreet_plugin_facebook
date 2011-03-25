@@ -15,63 +15,77 @@ class PluginFacebook_ModuleFacebook extends Module {
 	protected $FB; // API Facebook
 	protected $oMapper;
 	protected $aCfg=NULL;
+    protected $_settingsLoaded=false;
 
 	/**
 	 * Инициализация
 	 */
 	public function Init() {
+        // Маппер
+        $this->oMapper=Engine::GetMapper(__CLASS__);
         // facebook API
         $path=Plugin::GetPath('facebook').'classes/lib/facebook-php-sdk/src/facebook.php';
         include $path;
 
+        $this->LoadSettings();
         $this->aCfg=Config::Get('plugin.facebook');
 
+        Facebook::$CURL_OPTS[CURLOPT_SSL_VERIFYPEER] = false;
+        Facebook::$CURL_OPTS[CURLOPT_SSL_VERIFYHOST] = 2;
+
         // API
-		$this->FB=new Facebook(array(
-            'appId'  => $this->aCfg['application']['id'],
-            'secret' => $this->aCfg['application']['secret'],
-            'cookie' => true
+        if ($this->aCfg['application']['id'] && $this->aCfg['application']['secret']) {
+            $this->FB=new Facebook(array(
+                'appId'  => $this->aCfg['application']['id'],
+                'secret' => $this->aCfg['application']['secret'],
+                'cookie' => true
+            ));
+        }
+
+
+	}
+
+    public function UpdateMapperSettings($app_id,$app_key,$app_secret) {
+        Config::Set('plugin.facebook.application.id',$app_id);
+        Config::Set('plugin.facebook.application.key',$app_key);
+        Config::Set('plugin.facebook.application.secret',$app_secret);
+
+        $this->FB=new Facebook(array(
+                'appId'  => $app_id,
+                'secret' => $app_secret,
+                'cookie' => true
         ));
 
-        // Маппер
-        $this->oMapper=Engine::GetMapper(__CLASS__);
-	}
+        return true;
+    }
+
 
     /**
      * Проверка настроек и наличия прав у приложения писать на стену
      * @return bool
      */
-    public function CheckRightsOK() {
+    public function CheckRightsOK($page_id=false) {
 
-        $sKey='Plugin_Facebook_CheckRightsOK_'.$this->aCfg['page']['id'];
+        if ($page_id!==false) {
+            $sPageId=$page_id;
+        } else {
+            $sPageId=$this->aCfg['page']['id'];
+        }
+
+        $sKey='Plugin_Facebook_CheckRightsOK_'.$sPageId;
         $aResult=$this->Cache_Get($sKey);
 
         if (!$aResult || !isset($aResult['rights'])) {
+            $res=array(
+                'rights'=>$this->FB->api(array(
+                    'method'=>'pages.isappadded',
+                    'page_id'=>$sPageId,
+                ))
+            );
 
-        if (isset($this->aCfg) &&
-            isset($this->aCfg['page']) &&
-            isset($this->aCfg['page']['id']) &&
-            isset($this->aCfg['application']) &&
-            isset($this->aCfg['application']) &&
-            isset($this->aCfg['application']['id'])&&
-            isset($this->aCfg['application']['api'])&&
-            isset($this->aCfg['application']['secret'])) {
+            $aResult['rights']=$res;
 
-                $aResult=array(
-                    'rights'=>$this->FB->api(array(
-                        'method'=>'pages.isappadded',
-                        'page_id'=>$this->aCfg['page']['id'],
-                    )
-                ));
-
-                $this->Cache_Set($aResult,$sKey);
-            }
-            else
-            {
-                $aResult=array(
-                    'rights'=>false
-                );
-            }
+            $this->Cache_Set($aResult,$sKey);
         }
 
         return (bool)$aResult['rights'];
@@ -109,6 +123,38 @@ class PluginFacebook_ModuleFacebook extends Module {
     }
 
     /**
+     * Запретить публиковать этот топик в Facebook
+     * @param  $oTopic
+     * @return void
+     */
+    public function PreventTopicPublish($oTopic) {
+        $this->oMapper->PreventTopicPublish($oTopic->GetId());
+    }
+
+    /**
+     * Разрешить публиковать топик в Facebook
+     * @param  $oTopic
+     * @return void
+     */
+    public function AllowTopicPublish($oTopic) {
+        $this->oMapper->DeleteTopicPublish($oTopic->GetId());
+    }
+
+    /**
+     * Опубликовать текст
+     * @param  $oTopic
+     * @return bool
+     */
+    public function PublishCustomAttachment($aAttachment,$page_id=false) {
+        if (!$this->CheckRightsOK($page_id)) { return false; }
+
+        // публикуем в Facebook
+        $sPublishId=$this->_publish($aAttachment,$page_id);
+
+        return $sPublishId;
+    }
+
+    /**
      * Возвращает массив media-элементов. Готов к встраиванию в attachment
      * @param  $oTopic - сущность топика
      * @param bool $bSort - сортировать по расположению элемента в тексте
@@ -131,7 +177,7 @@ class PluginFacebook_ModuleFacebook extends Module {
         foreach($aVideos as $key => $sVideo) {
             // обработка видео YouTube
             if (strpos($sVideo,'www.youtube.com')) {
-                preg_match("#/v/(\w+)#",$sVideo,$aVideoIdMatch);
+                preg_match("#/v/([\w\-]+)#",$sVideo,$aVideoIdMatch);
                 if (isset($aVideoIdMatch[1])) {
                     $VideoId=$aVideoIdMatch[1];
 
@@ -205,13 +251,18 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @param  $attachment
      * @return bool
      */
-    public function _publish($attachment) {
-        if (!$this->CheckRightsOK()) { return false; }
+    public function _publish($attachment,$page_id=false) {
+        if (!$this->CheckRightsOK($page_id)) { return false; }
+
+        if ($page_id==false) {
+            $page_id=$this->aCfg['page']['id'];
+        }
 
         try {
             $aResult=$this->FB->api(array(
                 'method'=>'stream.publish',
-                'uid'=>$this->aCfg['page']['id'],
+                //'target_id'=>$this->aCfg['page']['id'],
+                'uid'=>$page_id,
                 'attachment'=>$attachment
             ));
         } catch (Exception $e){
@@ -228,8 +279,16 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @return bool
      */
     public function isTopicPublished($oTopic) {
+        return (bool)$this->GetPublishInfoByTopic($oTopic);
+    }
 
-        $sKey='PluginFacebook_isTopicPublished_'.$oTopic->getId();
+    /**
+     * Отдает информацию об опубликованном топике
+     * @param  $oTopic
+     * @return bool
+     */
+    public function GetPublishInfoByTopic($oTopic) {
+        $sKey='PluginFacebook_GetPublishInfoByTopic_'.$oTopic->getId();
 
         $aResult=$this->Cache_Get($sKey);
 
@@ -238,11 +297,11 @@ class PluginFacebook_ModuleFacebook extends Module {
             $bResult=$aResult['bResult'];
         } else {
             // если в кэше не нашли, получаем заново
-            $bResult=$this->oMapper->isTopicPublished($oTopic);
+            $bResult=$this->oMapper->GetPublishInfoByTopic($oTopic);
             // и сохраняем в кэш
             $this->Cache_Set(array('bResult'=>$bResult),$sKey);
         }
-        return (bool)$bResult;
+        return $bResult;
     }
 
     /**
@@ -268,6 +327,102 @@ class PluginFacebook_ModuleFacebook extends Module {
             break;
         }
         return false;
+    }
+
+    public function Delete($publish_id,$leaveDbLink=false) {
+        // в $publish_id содержатся идентификаторы страницы и поста разделенные символом подчеркивания
+        list($page_id,$post_id)=explode('_',$publish_id);
+
+        if (!$this->CheckRightsOK($page_id)) { return false; }
+
+        $bResult=false;
+
+        try {
+            $bResult=$this->FB->api(array(
+                'method'=>'stream.remove',
+                'post_id'=>$publish_id,
+                'uid'=>$page_id
+            ));
+
+            if ($bResult==true && $leaveDbLink==false) {
+                $this->oMapper->DeleteTopicPublishByPublishId($publish_id);
+            }
+
+        } catch (Exception $e){
+            $this->Logger_Error('PluginFacebook_ModuleFacebook->Delete: '.$e->getMessage());
+            return false;
+        }
+
+        return $bResult;
+    }
+
+    public function SaveSettings($app_id,$app_key,$app_secret,$pageId) {
+
+        $this->UpdateMapperSettings($app_id,$app_key,$app_secret);
+
+        if ($app_id && $app_key && $app_secret && $pageId) {
+
+            try {
+
+                if ($pageInfo=$this->GetPageInfoById($pageId)) {
+                    return $this->oMapper->SaveSettings($app_id,$app_key,$app_secret,$pageId,$pageInfo['page_url']);
+                }
+
+                return false;
+                
+            } catch (Exception $e) {
+                $this->Logger_Error('PluginFacebook_ModuleFacebook->SaveSettings: '.$e->getMessage());
+                return false;
+            }
+
+        } else {
+            return false;
+        }
+        
+    }
+
+    public function GetSettings($id=1) {
+        $sKey = 'PluginFacebook_GetSettings_id_'.$id;
+
+        if (false === ($aResult = $this->Cache_Get($sKey))) {
+			if ($aResult=$this->oMapper->GetSettings($id)) {
+				$this->Cache_Set($aResult, $sKey, array(), 60*60*24*1);
+			}
+		}
+
+        return $aResult;
+    }
+
+    public function LoadSettings($id=1, $force=false) {
+        if ($this->_settingsLoaded==true && $force==false) {
+            return;
+        }
+        
+        $aConfig = $this->GetSettings($id);
+
+        Config::Set('plugin.facebook.application.id',$aConfig['appId']);
+        Config::Set('plugin.facebook.application.api',$aConfig['appKey']);
+        Config::Set('plugin.facebook.application.secret',$aConfig['appSecret']);
+        Config::Set('plugin.facebook.page.id',$aConfig['pageId']);
+        Config::Set('plugin.facebook.page.url',$aConfig['pageUrl']);
+
+        $this->_settingsLoaded=true;
+        return;
+    }
+
+    public function GetPageInfoById($id,$aData=array('name','page_url')) {
+        try {
+            $aResult=$this->FB->api(array(
+                'method'=>'pages.getinfo',
+                'fields'=>$aData,
+                'page_ids'=>array($id)
+            ));
+        } catch (Exception $e){
+            $this->Logger_Error('PluginFacebook_ModuleFacebook->GetPageInfoById: '.$e->getMessage());
+            return false;
+        }
+
+        return $aResult[0];
     }
 }
 ?>
