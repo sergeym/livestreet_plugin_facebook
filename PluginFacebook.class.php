@@ -20,7 +20,7 @@ class PluginFacebook extends Plugin {
      * @return boolean
      */
 	public function Activate() {
-		if (!$this->isTableExists('prefix_plugin_facebook_queue')) {
+		if (!$this->isTableExists('sm_plugin_facebook_topic_list')) {
 			/**
 			 * При активации выполняем SQL дамп
 			 */

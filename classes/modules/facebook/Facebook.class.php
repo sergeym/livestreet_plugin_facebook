@@ -59,46 +59,12 @@ class PluginFacebook_ModuleFacebook extends Module {
         return true;
     }
 
-
-    /**
-     * Проверка настроек и наличия прав у приложения писать на стену
-     * @return bool
-     */
-    public function CheckRightsOK($page_id=false) {
-
-        if ($page_id!==false) {
-            $sPageId=$page_id;
-        } else {
-            $sPageId=$this->aCfg['page']['id'];
-        }
-
-        $sKey='Plugin_Facebook_CheckRightsOK_'.$sPageId;
-        $aResult=$this->Cache_Get($sKey);
-
-        if (!$aResult || !isset($aResult['rights'])) {
-            $res=array(
-                'rights'=>$this->FB->api(array(
-                    'method'=>'pages.isappadded',
-                    'page_id'=>$sPageId,
-                ))
-            );
-
-            $aResult['rights']=$res;
-
-            $this->Cache_Set($aResult,$sKey);
-        }
-
-        return (bool)$aResult['rights'];
-    }
-
     /**
      * Опубликовать топик
      * @param  $oTopic
      * @return bool
      */
     public function PublishTopic($oTopic) {
-        if (!$this->CheckRightsOK()) { return false; }
-
         if ($this->isTopicPublished($oTopic)) { return false; }
 
         $aAttachment=array(
@@ -146,8 +112,6 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @return bool
      */
     public function PublishCustomAttachment($aAttachment,$page_id=false) {
-        if (!$this->CheckRightsOK($page_id)) { return false; }
-
         // публикуем в Facebook
         $sPublishId=$this->_publish($aAttachment,$page_id);
 
@@ -252,7 +216,6 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @return bool
      */
     public function _publish($attachment,$page_id=false) {
-        if (!$this->CheckRightsOK($page_id)) { return false; }
 
         if ($page_id==false) {
             $page_id=$this->aCfg['page']['id'];
@@ -309,7 +272,7 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @param  $oTopic
      * @return bool
      */
-    public function canPublishTopic($oTopic) {
+    public function CanPublishTopic($oTopic) {
         // если топик уже опубликован, его нельзя снова публиковать
         if ($this->isTopicPublished($oTopic)==true) { return false; }
         $aCnf=Config::Get('plugin.facebook');
@@ -333,23 +296,34 @@ class PluginFacebook_ModuleFacebook extends Module {
         // в $publish_id содержатся идентификаторы страницы и поста разделенные символом подчеркивания
         list($page_id,$post_id)=explode('_',$publish_id);
 
-        if (!$this->CheckRightsOK($page_id)) { return false; }
-
         $bResult=false;
 
         try {
-            $bResult=$this->FB->api(array(
-                'method'=>'stream.remove',
-                'post_id'=>$publish_id,
-                'uid'=>$page_id
-            ));
+            $RealPublish=$this->FB->api($publish_id);
+
+            if ($RealPublish) {
+
+                $bResult=$this->FB->api(array(
+                    'method'    =>  'stream.remove',
+                    'post_id'   =>  $publish_id,
+                    'uid'       =>  $page_id
+                ));
+
+            } else {
+                $bResult=true;
+            }
 
             if ($bResult==true && $leaveDbLink==false) {
-                $this->oMapper->DeleteTopicPublishByPublishId($publish_id);
+                $iTopicId=$this->oMapper->GetTopicIdByPublishId($publish_id);
+
+                $this->oMapper->DeleteTopicPublish($iTopicId);
+
+                $sKey='PluginFacebook_GetPublishInfoByTopic_'.$iTopicId;
+                $this->Cache_Delete($sKey);
             }
 
         } catch (Exception $e){
-            $this->Logger_Error('PluginFacebook_ModuleFacebook->Delete: '.$e->getMessage());
+            $this->Logger_Error('PluginFacebook_ModuleFacebook->Delete: '.$e->getMessage().'; $publish_id='.$publish_id.', $page_id='.$page_id);
             return false;
         }
 

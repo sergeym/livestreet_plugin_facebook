@@ -36,16 +36,12 @@ class PluginFacebook_HookFacebook extends Hook {
                 //Вставка контролов публикации и удаления в форму редактирования топика
                 $this->AddHook("template_form_add_topic_topic_end", "HookInsertFacebookControlsToTopicAddOrEditForm", __CLASS__);
 
-                switch ($aCnf['strategy']) {
-                    case 'STRATEGY_RATING':
-                    $this->AddHook('module_rating_votetopic_after', 'HookRatingVoteTopicAfter', __CLASS__, 2);
-                break;
-                case 'STRATEGY_MAIN':
-                    $this->AddHook('module_rating_votetopic_after', 'HookRatingVoteTopicAfter', __CLASS__, 2);
-                    $this->AddHook('topic_add_after', 'HookRatingEditTopicAfter', __CLASS__);
-                    $this->AddHook('topic_edit_after', 'HookRatingEditTopicAfter', __CLASS__);
-                break;
-        }
+                // Голосование за топик
+                $this->AddHook('module_rating_votetopic_after', 'HookRatingVoteTopicAfter', __CLASS__, 2);
+
+                // Обработка формы добавления и редактирования топика
+                $this->AddHook('topic_add_after', 'HookRatingEditTopicAfter', __CLASS__);
+                $this->AddHook('topic_edit_after', 'HookRatingEditTopicAfter', __CLASS__);
         }
 
         function initAction($aVars) {
@@ -90,7 +86,7 @@ class PluginFacebook_HookFacebook extends Hook {
                 //$iValue =   $args['params'][2];
 
                 // можно ли опубликовать топик в Facebook
-                $bCanPublishTopic=$this->PluginFacebook_ModuleFacebook_canPublishTopic($oTopic);
+                $bCanPublishTopic=$this->PluginFacebook_ModuleFacebook_CanPublishTopic($oTopic);
 
                 if ($bCanPublishTopic==true) {
                     $this->PluginFacebook_ModuleFacebook_PublishTopic($oTopic);

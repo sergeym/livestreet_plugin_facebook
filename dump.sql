@@ -5,3 +5,12 @@ CREATE TABLE IF NOT EXISTS `prefix_plugin_facebook_topic_list` (
   PRIMARY KEY (`topic_id`),
   CONSTRAINT `FK_plugin_facebook_topic` FOREIGN KEY (`topic_id`) REFERENCES `prefix_topic` (`topic_id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `sm_plugin_facebook_settings` (
+	`id` INT(10) NULL DEFAULT NULL,
+	`appId` CHAR(20) NULL DEFAULT NULL,
+	`appKey` CHAR(48) NULL DEFAULT NULL,
+	`appSecret` CHAR(48) NULL DEFAULT NULL,
+	`pageId` CHAR(20) NULL DEFAULT NULL,
+	`pageUrl` VARCHAR(1024) NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

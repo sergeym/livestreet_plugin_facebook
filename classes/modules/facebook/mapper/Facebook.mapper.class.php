@@ -80,21 +80,19 @@ class PluginFacebook_ModuleFacebook_MapperFacebook extends Mapper {
 		return false;
     }
 
-
-    /**
-     * Удаляет из базы информацию о публикации топка в Facebook
-     * @param  $publish_id
-     * @return bool
-     */
-    public function DeleteTopicPublishByPublishId($publish_id) {
-       $sql = "DELETE FROM ".Config::Get('plugin.facebook.db.table.plugin_facebook_topic_list')."
+    public function GetTopicIdByPublishId($publish_id) {
+        $sql = "SELECT
+					topic_id
+                FROM
+                    ".Config::Get('plugin.facebook.db.table.plugin_facebook_topic_list')."
                 WHERE
                     publish_id = ?
-		";
-		if ($this->oDb->query($sql,$publish_id)) {
-			return true;
+                ";
+
+        if ($aRow=$this->oDb->selectRow($sql,$publish_id)) {
+			return $aRow['topic_id'];
 		}
-		return false;
+		return null;
     }
 
     public function DeleteTopicPublish($topic_id) {
@@ -148,13 +146,10 @@ class PluginFacebook_ModuleFacebook_MapperFacebook extends Mapper {
         require_once Config::Get('path.root.engine').'/lib/external/XXTEA/encrypt.php';
 
         $sql="SELECT * FROM ".Config::Get('plugin.facebook.db.table.plugin_facebook_settings')." WHERE id=?";
-        if ($aRows=$this->oDb->select($sql,$id)) {
-            if (isset($aRows[0])) {
-                $aResult=$aRows[0];
-                $aResult['appKey']    = xxtea_decrypt(base64_decode($aResult['appKey']),Config::Get('module.blog.encrypt'));
-                $aResult['appSecret'] = xxtea_decrypt(base64_decode($aResult['appSecret']),Config::Get('module.blog.encrypt'));
-                return $aResult;
-            }
+        if ($aResult=$this->oDb->selectRow($sql,$id)) {
+            $aResult['appKey']    = xxtea_decrypt(base64_decode($aResult['appKey']),Config::Get('module.blog.encrypt'));
+            $aResult['appSecret'] = xxtea_decrypt(base64_decode($aResult['appSecret']),Config::Get('module.blog.encrypt'));
+            return $aResult;
         }
 
         return false;
