@@ -9,7 +9,7 @@
                 <lang name="russian">Сергей Марин</lang>
         </author>
         <homepage>http://sergeymarin.com/</homepage>
-        <version>0.1</version>
+        <version>0.2</version>
         <requires>
                 <livestreet>0.4.2</livestreet>
                 <plugins>

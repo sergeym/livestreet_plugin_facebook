@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright © 2010 Sergey Marin
+ * Copyright © 2011 Sergey Marin
  *
  * Плагин Facebook: публикация в ленту страницы (page) и добавление виджетов
  * Автор: Sergey Marin

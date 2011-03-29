@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright © 2010 Sergey Marin
+ * Copyright © 2011 Sergey Marin
  *
  * Плагин Facebook: публикация в ленту страницы (page) и добавление виджетов
  * Автор: Sergey Marin
@@ -80,6 +80,12 @@ class PluginFacebook_ModuleFacebook_MapperFacebook extends Mapper {
 		return false;
     }
 
+
+    /**
+     * Получить идентификатор топика по идентификатору публикации в Facebook
+     * @param  $publish_id
+     * @return null
+     */
     public function GetTopicIdByPublishId($publish_id) {
         $sql = "SELECT
 					topic_id
@@ -95,6 +101,11 @@ class PluginFacebook_ModuleFacebook_MapperFacebook extends Mapper {
 		return null;
     }
 
+    /**
+     * Удалить сведения о публикации в FB
+     * @param  $topic_id
+     * @return bool
+     */
     public function DeleteTopicPublish($topic_id) {
        $sql = "DELETE FROM ".Config::Get('plugin.facebook.db.table.plugin_facebook_topic_list')."
                 WHERE
@@ -106,6 +117,15 @@ class PluginFacebook_ModuleFacebook_MapperFacebook extends Mapper {
 		return false;
     }
 
+    /**
+     * Сохранить настройки в БД. Часть настроек шифруется.
+     * @param  $app_id
+     * @param  $app_key
+     * @param  $app_secret
+     * @param  $pageId
+     * @param  $pageUrl
+     * @return bool
+     */
     public function SaveSettings($app_id,$app_key,$app_secret,$pageId,$pageUrl) {
         require_once Config::Get('path.root.engine').'/lib/external/XXTEA/encrypt.php';
         
@@ -142,6 +162,11 @@ class PluginFacebook_ModuleFacebook_MapperFacebook extends Mapper {
 
 	}
 
+    /**
+     * Получить настройки
+     * @param int $id
+     * @return bool
+     */
     public function GetSettings($id=1) {
         require_once Config::Get('path.root.engine').'/lib/external/XXTEA/encrypt.php';
 
@@ -151,9 +176,8 @@ class PluginFacebook_ModuleFacebook_MapperFacebook extends Mapper {
             $aResult['appSecret'] = xxtea_decrypt(base64_decode($aResult['appSecret']),Config::Get('module.blog.encrypt'));
             return $aResult;
         }
-
+        
         return false;
-
 	}
 
 }

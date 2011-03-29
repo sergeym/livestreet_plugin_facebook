@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright © 2010 Sergey Marin
+ * Copyright © 2011 Sergey Marin
  *
  * Плагин Facebook: публикация в ленту страницы (page) и добавление виджетов
  * Автор: Sergey Marin
@@ -42,15 +42,15 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         $aConfig=$this->PluginFacebook_ModuleFacebook_GetSettings();
         // в шаблон
         $this->Viewer_Assign('pluginCfg',$aConfig);
-    //    $this->Viewer_Assign('facebookRightsOK',$facebookRightsOK);
         $this->Viewer_Assign('facebookRightsOK',false);
-        //$this->Viewer_AppendStyle(Plugin::GetTemplateWebPath('facebook').'css/index.css');
-        
         // меняем заголовок старницы
         $this->Viewer_AddHtmlTitle($this->Lang_Get('plugin_facebook_setup_title'));
-        
     }
 
+    /**
+     * Мастер проверки
+     * @return void
+     */
     protected function EventAjaxTest() {
         $this->Viewer_SetResponseAjax();
 
@@ -74,10 +74,10 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
                         if ($aPageInfo=$this->PluginFacebook_ModuleFacebook_GetPageInfoById($pageId,array('page_url','name'))) {
                         
                             $aAttachment=array(
-                                'caption' => 'Модуль Facebook - проверка. rand('.rand(0,99999).')',
-                                'name' => 'Модуль Facebook для livestreet',
+                                'caption' => 'Проверка. Random: '.rand(0,99999),
+                                'name' => 'Модуль Facebook для LiveStreet',
                                 'href' => Config::Get('path.root.web'),
-                                'description' => 'Плагин позволяет публиковать анонсы топиков в ленту сайта на Facebook. rand('.rand(0,99999).')'
+                                'description' => 'Эта запись создана с помощью плагина Facebook для блого-социального движка LiveStreet. Данная запись создана программой настройки плагина. Если Вы владелец сайта '.Config::Get('path.root.web').' и не смогли удалить это сообщение через программу настройки, Вы можете сделать это вручную.'
                             );
 
                             $sPublishId = $this->PluginFacebook_ModuleFacebook_PublishCustomAttachment($aAttachment,$pageId);
@@ -120,6 +120,10 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         }
     }
 
+    /**
+     * Сохранение настроек
+     * @return void
+     */
     protected function EventAjaxSave() {
         $this->Viewer_SetResponseAjax();
 		$bStateError=true;
@@ -130,17 +134,12 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
 		$app_key=getRequest('app_key',null,'post');
 		$app_secret=getRequest('app_secret',null,'post');
 		$pageId=getRequest('page_id',null,'post');
-        $action=getRequest('action',null,'post');
-        $publish_id=getRequest('publish_id',null,'post');
-
 
         $sPublishId='';$bResult=null;
 
         if ($app_id && $app_key && $app_secret && $pageId) {
             $bResult=$this->PluginFacebook_ModuleFacebook_SaveSettings($app_id,$app_key,$app_secret,$pageId);
         }
-
-        
 
         $this->Viewer_AssignAjax('bStateError', $bStateError);
         $this->Viewer_AssignAjax('sMsgTitle',$sMsgTitle);

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright © 2010 Sergey Marin
+ * Copyright © 2011 Sergey Marin
  *
  * Плагин Facebook: публикация в ленту страницы (page) и добавление виджетов
  * Автор: Sergey Marin
@@ -30,6 +30,7 @@ class PluginFacebook_ModuleFacebook extends Module {
         $this->LoadSettings();
         $this->aCfg=Config::Get('plugin.facebook');
 
+        // Игнорировать сертификаты
         Facebook::$CURL_OPTS[CURLOPT_SSL_VERIFYPEER] = false;
         Facebook::$CURL_OPTS[CURLOPT_SSL_VERIFYHOST] = 2;
 
@@ -41,10 +42,15 @@ class PluginFacebook_ModuleFacebook extends Module {
                 'cookie' => true
             ));
         }
-
-
 	}
 
+    /**
+     * Обновить настройки Маппера.
+     * @param  $app_id
+     * @param  $app_key
+     * @param  $app_secret
+     * @return bool
+     */
     public function UpdateMapperSettings($app_id,$app_key,$app_secret) {
         Config::Set('plugin.facebook.application.id',$app_id);
         Config::Set('plugin.facebook.application.key',$app_key);
@@ -292,6 +298,13 @@ class PluginFacebook_ModuleFacebook extends Module {
         return false;
     }
 
+    /**
+     * Удаляет анонс топика в Facebook и запись из базы.
+     * В случае, когда анонс удален вручную, удаляет запись из базы.
+     * @param  $publish_id
+     * @param bool $leaveDbLink
+     * @return bool
+     */
     public function Delete($publish_id,$leaveDbLink=false) {
         // в $publish_id содержатся идентификаторы страницы и поста разделенные символом подчеркивания
         list($page_id,$post_id)=explode('_',$publish_id);
@@ -330,6 +343,14 @@ class PluginFacebook_ModuleFacebook extends Module {
         return $bResult;
     }
 
+    /**
+     * Сохранить настройки плагина
+     * @param  $app_id
+     * @param  $app_key
+     * @param  $app_secret
+     * @param  $pageId
+     * @return bool
+     */
     public function SaveSettings($app_id,$app_key,$app_secret,$pageId) {
 
         $this->UpdateMapperSettings($app_id,$app_key,$app_secret);
@@ -339,7 +360,10 @@ class PluginFacebook_ModuleFacebook extends Module {
             try {
 
                 if ($pageInfo=$this->GetPageInfoById($pageId)) {
-                    return $this->oMapper->SaveSettings($app_id,$app_key,$app_secret,$pageId,$pageInfo['page_url']);
+                    if ($this->oMapper->SaveSettings($app_id,$app_key,$app_secret,$pageId,$pageInfo['page_url'])) {
+                        $sKey = 'PluginFacebook_GetSettings_id_1';
+                        $this->Cache_Delete($sKey);
+                    }
                 }
 
                 return false;
@@ -355,6 +379,11 @@ class PluginFacebook_ModuleFacebook extends Module {
         
     }
 
+    /**
+     * Получить настройки плагина
+     * @param int $id
+     * @return
+     */
     public function GetSettings($id=1) {
         $sKey = 'PluginFacebook_GetSettings_id_'.$id;
 
@@ -367,6 +396,12 @@ class PluginFacebook_ModuleFacebook extends Module {
         return $aResult;
     }
 
+    /**
+     * Загрузить настройки плагина в конфигурацию сайта
+     * @param int $id
+     * @param bool $force
+     * @return
+     */
     public function LoadSettings($id=1, $force=false) {
         if ($this->_settingsLoaded==true && $force==false) {
             return;
@@ -384,6 +419,12 @@ class PluginFacebook_ModuleFacebook extends Module {
         return;
     }
 
+    /**
+     * Получить информацияю о странице (page) по индентификатору
+     * @param  $id
+     * @param array $aData
+     * @return bool
+     */
     public function GetPageInfoById($id,$aData=array('name','page_url')) {
         try {
             $aResult=$this->FB->api(array(

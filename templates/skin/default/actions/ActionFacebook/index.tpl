@@ -330,6 +330,30 @@
             $('screen-delete').show();
         }
 
+        function showSaveSettings() {
+            // удаляем кнопку "удалить"
+            $('remove_button').dispose();
+
+            if ($('go_save_button')) {
+                $('go_save_button').dispose();
+            }
+
+            el = $('save_settings');
+
+            if (!el) {
+                // добавляем кнопку "сохранить настройки"
+                el = new Element('input', {
+                    type:'button',
+                    value:'Сохранить настройки',
+                    id:'save_settings',
+                    onclick:'saveSettings()'
+                });
+                $('screen-save').grab(el);
+            }
+
+            $('screen-delete').hide();
+            $('screen-save').show();
+        }
 
         function deleteTestRecord(publishId) {
             app_id = $('app_id').value;
@@ -363,25 +387,19 @@
 
                     if (result.bStateError) {
                         alert(result.sMsgTitle+"\r\n"+result.sMsg);
-                    } else {
-                        // удаляем кнопку "удалить"
-                        $('remove_button').dispose();
 
-                        el = $('save_settings');
-
+                        el = $('go_save_button');
                         if (!el) {
-                            // добавляем кнопку "сохранить настройки"
                             el = new Element('input', {
                                 type:'button',
-                                value:'Сохранить настройки',
-                                id:'save_settings',
-                                onclick:'saveSettings()'
+                                value:'Игнорировать',
+                                id:'go_save_button',
+                                onclick:'showSaveSettings();'
                             });
-                            $('screen-save').grab(el);
+                            $('screen-delete').grab(el);
                         }
-
-                        $('screen-delete').hide();
-                        $('screen-save').show();
+                    } else {
+                        showSaveSettings();
                     }
                 },
                 true

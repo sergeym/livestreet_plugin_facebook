@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright © 2010 Sergey Marin
+ * Copyright © 2011 Sergey Marin
  *
  * Плагин Facebook: публикация в ленту страницы (page) и добавление виджетов
  * Автор: Sergey Marin
@@ -18,11 +18,11 @@ $config = array();
 // Раскомментируйте выбранную строку, что бы выбрать нужную стратегию //
 
 // отправлять когда топик появится на главной
-#$config['strategy']='STRATEGY_MAIN';
+$config['strategy']='STRATEGY_MAIN';
 
 // отправлять после получения получения определенного количества голосов
-$config['strategy']='STRATEGY_RATING';
-$config['STRATEGY_RATING']['rating']=1; // необходимое количество голосов
+#$config['strategy']='STRATEGY_RATING';
+#$config['STRATEGY_RATING']['rating']=1; // необходимое количество голосов
 
 // Настройки блока Facebook //
 
