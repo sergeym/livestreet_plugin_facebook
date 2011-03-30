@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `prefix_plugin_facebook_topic_list` (
 
 ALTER TABLE `prefix_plugin_facebook_topic_list`  ADD COLUMN `status` ENUM('published','published') NOT NULL AFTER `publish_id`;
 
-CREATE TABLE IF NOT EXISTS `sm_plugin_facebook_settings` (
+CREATE TABLE IF NOT EXISTS `prefix_plugin_facebook_settings` (
 	`id` INT(10) NULL DEFAULT NULL,
 	`appId` CHAR(20) NULL DEFAULT NULL,
 	`appKey` CHAR(48) NULL DEFAULT NULL,
