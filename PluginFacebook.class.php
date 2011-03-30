@@ -20,7 +20,7 @@ class PluginFacebook extends Plugin {
      * @return boolean
      */
 	public function Activate() {
-		if (!$this->isTableExists('sm_plugin_facebook_topic_list') && !$this->isTableExists('prefix_plugin_facebook_settings')) {
+		if (!($this->isTableExists('sm_plugin_facebook_topic_list') && $this->isTableExists('prefix_plugin_facebook_settings'))) {
 			/**
 			 * При активации выполняем SQL дамп
 			 */
@@ -34,8 +34,8 @@ class PluginFacebook extends Plugin {
      * @return void
      */
 	public function Init() {
-        $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath('facebook').'css/index.css');
-        $this->Viewer_AppendScript(Plugin::GetTemplateWebPath('facebook').'js/facebook.js');
+        $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath(__CLASS__).'css/index.css');
+        $this->Viewer_AppendScript(Plugin::GetTemplateWebPath(__CLASS__).'js/facebook.js');
         $this->Viewer_Assign('sFacebookTemplateWebPathPlugin',Plugin::GetTemplateWebPath(__CLASS__));
 	}
 
