@@ -25,7 +25,7 @@
 
 
 					</div>
-                    <div style="text-align:right;">Plugin Facebook by <a href="http://sergeymarin.com#ls-facebook">Sergey Marin</a></div>
+                    <div id="FB_plugin_author">Plugin Facebook by <a style="color:silver;" href="http://sergeymarin.com#ls-facebook">Sergey Marin</a></div>
 				</div></div>
 
 				<div class="bl"><div class="br"></div></div>

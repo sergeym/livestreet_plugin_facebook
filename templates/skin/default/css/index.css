@@ -157,3 +157,8 @@ dl.money dd {
     background:#f0efef;
     border:1px dotted silver;
 }
+
+#FB_plugin_author {
+    text-align:right;
+    color:silver;
+};
