@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `prefix_plugin_facebook_topic_list` (
   CONSTRAINT `FK_plugin_facebook_topic` FOREIGN KEY (`topic_id`) REFERENCES `prefix_topic` (`topic_id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE `prefix_plugin_facebook_topic_list`  ADD COLUMN `status` ENUM('published','published') NOT NULL AFTER `publish_id`;
+ALTER TABLE `prefix_plugin_facebook_topic_list`  ADD COLUMN `status` ENUM('published','blocked') NOT NULL AFTER `publish_id`;
 
 CREATE TABLE IF NOT EXISTS `prefix_plugin_facebook_settings` (
 	`id` INT(10) NULL DEFAULT NULL,
