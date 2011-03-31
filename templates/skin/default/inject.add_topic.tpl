@@ -15,7 +15,7 @@
     {else}
         {* сообщение для обычных пользователей *}
         {if $aPluginConfig.strategy=='STRATEGY_MAIN'}
-            <p>Если этот топик попадет на главную страницу, его анонс на него будет добавлен на <a href="{$aPluginConfig.page.url}" target="_blank">страничку нашего сайта в Facebook</a></p>
+            <p>Если этот топик попадет на главную страницу, анонс на него будет добавлен на <a href="{$aPluginConfig.page.url}" target="_blank">страничку нашего сайта в Facebook</a></p>
         {elseif $aPluginConfig.strategy=='STRATEGY_RATING'}
             <p>Если за этот топик {$aPluginConfig.STRATEGY_RATING.rating|declension:'проголосует;проголосуют;проголосуют':'ru'} {$aPluginConfig.STRATEGY_RATING.rating} {$aPluginConfig.STRATEGY_RATING.rating|declension:'человек;человека;человек':'ru'}, анос на него будет добавлен на <a href="{$aPluginConfig.page.url}" target="_blank">страничку нашего сайта в Facebook</a></p>
         {/if}
