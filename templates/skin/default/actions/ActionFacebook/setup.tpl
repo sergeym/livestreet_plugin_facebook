@@ -38,11 +38,10 @@
         <h2 class="StepTitle">{$aLang.step} 1: {$aLang.facebook_application}</h2>
             <div class="step-data">
             <p>
-                {$aLang.create_facebook_app}<br>
-                <span class="note">{$aLang.create_facebook_app_note}</span>
-                <br />
-                <p><a href="http://php.net/manual/en/book.curl.php" target="_blank">cUrl</a>: {if $bCurlInstalled}{$aLang.installed}{else}{$aLang.not_installed}{/if}</p>
-                <p><a href="http://php.net/manual/en/book.simplexml.php" target="_blank">SimpleXml</a>: {if $bSimpleXmlInstalled}{$aLang.installed}{else}{$aLang.not_installed}{/if}</p>
+                {$aLang.create_facebook_app}<br />
+                <span class="note">{$aLang.create_facebook_app_note}</span><br />
+                <a href="http://php.net/manual/en/book.curl.php" target="_blank">cUrl</a>: {if $bCurlInstalled}{$aLang.installed}{else}{$aLang.not_installed}{/if}<br />
+                <a href="http://php.net/manual/en/book.simplexml.php" target="_blank">SimpleXml</a>: {if $bSimpleXmlInstalled}{$aLang.installed}{else}{$aLang.not_installed}{/if}
             </p>
 
             <p>{$aLang.fill_facebook_app_data}</p>
