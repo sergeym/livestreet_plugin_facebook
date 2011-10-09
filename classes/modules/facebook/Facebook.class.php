@@ -12,10 +12,11 @@
  *
  */
 class PluginFacebook_ModuleFacebook extends Module {
-	protected $FB; // API Facebook
+	protected $FB=NULL; // API Facebook
 	protected $oMapper;
 	protected $aCfg=NULL;
     protected $_settingsLoaded=false;
+    protected $FbUser=NULL;
 
 	/**
 	 * Инициализация
@@ -23,46 +24,38 @@ class PluginFacebook_ModuleFacebook extends Module {
 	public function Init() {
         // Маппер
         $this->oMapper=Engine::GetMapper(__CLASS__);
-        // facebook API
-        $path=Plugin::GetPath('facebook').'classes/lib/facebook-php-sdk/src/facebook.php';
-        include $path;
+	}
 
-        $this->LoadSettings();
+    public function StartAPI($settings=null) {
+        if ($this->FB) return true;
+
+        if (!$settings) {
+            $this->LoadSettings();
+        } else {
+            Config::Set('plugin.facebook.application.id', $settings['id']);
+            Config::Set('plugin.facebook.application.secret', $settings['secret']);
+            Config::Set('plugin.facebook.application.access_token', $settings['access_token']);
+        }
+        
         $this->aCfg=Config::Get('plugin.facebook');
 
-        // Игнорировать сертификаты
-        Facebook::$CURL_OPTS[CURLOPT_SSL_VERIFYPEER] = false;
-        Facebook::$CURL_OPTS[CURLOPT_SSL_VERIFYHOST] = 2;
-
         // API
-        if ($this->aCfg['application']['id'] && $this->aCfg['application']['secret']) {
+        if ($this->aCfg['application']['id'] && $this->aCfg['application']['secret'] && $this->aCfg['application']['access_token']) {
+            // facebook API
+            $path=Plugin::GetPath(__CLASS__).'classes/lib/facebook-php-sdk/src/facebook.php';
+            include $path;
+
+            // Игнорировать сертификаты
+            Facebook::$CURL_OPTS[CURLOPT_SSL_VERIFYPEER] = false;
+            Facebook::$CURL_OPTS[CURLOPT_SSL_VERIFYHOST] = 2;
+
             $this->FB=new Facebook(array(
                 'appId'  => $this->aCfg['application']['id'],
                 'secret' => $this->aCfg['application']['secret'],
-                'cookie' => true
             ));
+
+            $this->FB->setAccessToken($this->aCfg['application']['access_token']);
         }
-	}
-
-    /**
-     * Обновить настройки Маппера.
-     * @param  $app_id
-     * @param  $app_key
-     * @param  $app_secret
-     * @return bool
-     */
-    public function UpdateMapperSettings($app_id,$app_key,$app_secret) {
-        Config::Set('plugin.facebook.application.id',$app_id);
-        Config::Set('plugin.facebook.application.key',$app_key);
-        Config::Set('plugin.facebook.application.secret',$app_secret);
-
-        $this->FB=new Facebook(array(
-                'appId'  => $app_id,
-                'secret' => $app_secret,
-                'cookie' => true
-        ));
-
-        return true;
     }
 
     /**
@@ -72,26 +65,26 @@ class PluginFacebook_ModuleFacebook extends Module {
      */
     public function PublishTopic($oTopic) {
         if ($this->isTopicPublished($oTopic)) { return false; }
-
-        $aAttachment=array(
-            'caption' => $oTopic->getBlog()->getTitle(),
+        $aAttachment = array(
+            'link' => $oTopic->getUrl(),
             'name' => $oTopic->getTitle(),
-            'href' => $oTopic->getUrl(),
-            'description' => strip_tags($oTopic->GetTextShort())
+            'caption' => $oTopic->getBlog()->getTitle(),
+            'description' => strip_tags($oTopic->GetTextShort()),
         );
 
         // Получаем список media-материалов
-        $aAttachment['media']=$this->getMedia($oTopic,false);
-
+        $aMedia = $this->getMedia($oTopic,false);
+        $aAttachment = array_merge($aAttachment,$aMedia);
         // публикуем в Facebook
-        $sPublishId=$this->_publish($aAttachment);
+        $aPublishId=$this->_publish($aAttachment);
 
         // записываем в опубликованные
-        if ($sPublishId) {
-            $this->oMapper->TopicPublish($oTopic->getId(),$sPublishId);
+        if ($aPublishId && isset($aPublishId['id'])) {
+            $this->oMapper->TopicPublish($oTopic->getId(),$aPublishId['id']);
+            return $aPublishId['id'];
         }
 
-        return $sPublishId;
+        return null;
     }
 
     /**
@@ -125,48 +118,121 @@ class PluginFacebook_ModuleFacebook extends Module {
     }
 
     /**
-     * Возвращает массив media-элементов. Готов к встраиванию в attachment
+     * Возвращает массив media-элементов.
      * @param  $oTopic - сущность топика
      * @param bool $bSort - сортировать по расположению элемента в тексте
      * @return array
      */
     public function getMedia($oTopic,$bSort=false) {
-        // подключение картинок
-        $aImages=$this->_findImages($oTopic->GetTextShort());
-        $aMedia=array();
-        foreach($aImages as $key => $aImg) {
-            $aMedia[$key]=array(
-                "type" => "image",
-                "src" => $aImg['src'],
-                "href" => $oTopic->getUrl()
-            );
+        $aResult=$aMedia=array();
+
+        $sCacheKey = 'open_graph_topic_id_'.$oTopic->getId();
+
+        if (false === ($aResult = $this->Cache_Get($sCacheKey))) {
+
+            switch($oTopic->GetType()) {
+                case 'photoset':
+                    if ($oMainPhoto = $oTopic->GetPhotosetMainPhoto()) {
+                        $aMedia=array(
+                            array(
+                                'type'=>'image',
+                                'picture'=>$oMainPhoto->GetPath()
+                            )
+                        );
+                    }
+                break;
+                case 'topic':
+
+                    // подключение картинок
+                    $aImages=$this->_findImages($oTopic->GetTextShort());
+                    $aMedia=array();
+                    foreach($aImages as $key => $aImg) {
+                        $aMedia[$key]=array(
+                            'type' => 'image',
+                            'picture' => $aImg['src']
+                        );
+                    }
+                    // подключение видео
+                    $aVideos=$this->_findVideo($oTopic->GetTextShort());
+
+                    if ($aVideos) {
+                        foreach($aVideos as $key => $sVideo) {
+                            $_v = $this->_getDataForVideo($sVideo);
+                            if ($_v) {
+                                $aMedia[$key]=$_v;
+                            }
+                        }
+                    }
+                break;
+                default:
+                    $this->Hook_Run('Plugin_Facebook_Unidentified_Topic_Type', array('oTopic'=>$oTopic,'aMedia'=>$aMedia));
+            }
+
+            // сортировка по ключу, если требуется
+            if ($bSort==true) ksort($aMedia);
+            // отдаем без ключей
+            $_aRes = array_values($aMedia);
+            $aResult = count($_aRes)>0?$_aRes[0]:array();
+            //$this->Logger_Error($oTopic->GetId().':'.$oTopic->GetTitle().":".print_r($aResult,true));
+            // Кладем в кэш на год
+            $this->Cache_Set($aResult, $sCacheKey, array('topic_update'), 60*60*24*31*12);
         }
-        // подключение видео
-        $aVideos=$this->_findVideos($oTopic->GetTextShort());
+        //print_r($aResult);
+        return $aResult;
+    }
 
-        foreach($aVideos as $key => $sVideo) {
-            // обработка видео YouTube
-            if (strpos($sVideo,'www.youtube.com')) {
-                preg_match("#/v/([\w\-]+)#",$sVideo,$aVideoIdMatch);
-                if (isset($aVideoIdMatch[1])) {
-                    $VideoId=$aVideoIdMatch[1];
-
-                    $aMedia[$key]=array('type' => 'flash',
-                                 'swfsrc' => 'http://www.youtube.com/v/'.$VideoId.'&hl=en&fs=1',
-                                 'imgsrc' => 'http://img.youtube.com/vi/'.$VideoId.'/default.jpg?h=100&w=200&sigh=__wsYqEz4uZUOvBIb8g-wljxpfc3Q=',
-                                 'width' => '160',
-                                 'height' => '120',
-                                 'expanded_width' => '480',
-                                 'expanded_height' => '385');
+    protected function _getDataForVideo($sVideo) {
+        $sDomain = implode('.',array_slice(explode('.',strtolower(parse_url($sVideo,PHP_URL_HOST))),-2));
+        switch($sDomain) {
+            case 'vimeo.com':
+                $_sQS = parse_url($sVideo,PHP_URL_QUERY);
+                $_aQS=array();
+                parse_str($_sQS,$_aQS);
+                $_v = $this->_getDataByVimeoClipId($_aQS['clip_id']);
+                if($_v) {
+                    return array_merge(array('source'=>$sVideo),$_v);
+                } else {
+                    return null;
                 }
+            break;
+            case 'youtube.com':
+                if (preg_match('/\/v\/(\w+)&/i',$sVideo,$aMatches)) {
+                    return array_merge(array('source'=>$sVideo),$this->_getDataByYoutubeClipId($aMatches[1]));
+                } else {
+                    return null;
+                }
+            break;
+        }
+    }
 
+    protected function _getDataByVimeoClipId($sId) {
+
+        if ($xml = simplexml_load_file('http://vimeo.com/api/v2/video/'.$sId.'.xml')) {
+            try {
+                return array(
+                    'picture' => ''.$xml->video->thumbnail_small,
+                    'type' => 'application/x-shockwave-flash',
+                    'width' => 0+$xml->video->width,
+                    'height' => 0+$xml->video->height,
+                    'type' => 'video',
+                    'videotype' => 'application/x-shockwave-flash'
+                );
+            } catch (Exception $e) {
+                return null;
             }
         }
 
-        // сортировка по ключу, если требуется
-        if ($bSort==true) ksort($aMedia);
-        // отдаем без ключей
-        return array_values($aMedia);
+    }
+
+    protected function _getDataByYoutubeClipId($sId) {
+        return array(
+            'picture' => 'http://img.youtube.com/vi/'.$sId.'/1.jpg',
+            'type' => 'application/x-shockwave-flash',
+            'width' => 480,
+            'height' => 360,
+            'type' => 'video',
+            'videotype' => 'application/x-shockwave-flash'
+        );
     }
 
     /**
@@ -199,21 +265,19 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @param  $sText
      * @return array
      */
-    protected function _findVideos($sText) {
-        preg_match_all('/<object(.*)<\/object>/i',$sText.$sText,$obj_matches);
+    protected function _findVideo($sText) {
+
+        preg_match_all('/<object .*<\/object>/i',$sText,$obj_matches);
         $aVideoObj=isset($obj_matches[0])?$obj_matches[0]:array();
-
-        $aVideo=array();
-
-        if (is_array($aVideoObj)) {
-            foreach($aVideoObj as $sObj) {
-                if (preg_match('/http:\/\/www\.youtube[^"]+/', $sObj, $video_matches)) {
-                    $aVideo[strpos($sText,$video_matches[0])]=$video_matches[0];
-                }
+        $aVideos = array();
+        foreach($aVideoObj as $sVideo) {
+            $regex  = '/<param\s*name\s*=\s*"movie"\s*value\s*=\s*"(.*)"/Ui';
+            if (preg_match($regex, $sVideo, $aMatches)) {
+                $aVideos[strpos($sText,$sVideo)] = $aMatches[1];
             }
         }
 
-        return $aVideo;
+        return $aVideos;
     }
 
     /**
@@ -222,18 +286,12 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @return bool
      */
     public function _publish($attachment,$page_id=false) {
-
         if ($page_id==false) {
             $page_id=$this->aCfg['page']['id'];
         }
 
         try {
-            $aResult=$this->FB->api(array(
-                'method'=>'stream.publish',
-                //'target_id'=>$this->aCfg['page']['id'],
-                'uid'=>$page_id,
-                'attachment'=>$attachment
-            ));
+            $aResult=$this->FB->api('/'.$page_id.'/feed', 'POST', $attachment);
         } catch (Exception $e){
             $this->Logger_Error($e->getMessage());
             return false;
@@ -312,16 +370,10 @@ class PluginFacebook_ModuleFacebook extends Module {
         $bResult=false;
 
         try {
-            $RealPublish=$this->FB->api($publish_id);
-
-            if ($RealPublish) {
-
-                $bResult=$this->FB->api(array(
-                    'method'    =>  'stream.remove',
-                    'post_id'   =>  $publish_id,
-                    'uid'       =>  $page_id
-                ));
-
+            $aPublish=$this->FB->api($publish_id);
+            //echo $aPublish;exit;
+            if ($aPublish) {
+                $bResult = $this->FB->api('/'.$publish_id,'DELETE');
             } else {
                 $bResult=true;
             }
@@ -351,22 +403,20 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @param  $pageId
      * @return bool
      */
-    public function SaveSettings($app_id,$app_key,$app_secret,$pageId) {
+    public function SaveSettings($app_id,$app_secret,$access_token,$pageId) {
 
-        $this->UpdateMapperSettings($app_id,$app_key,$app_secret);
-
-        if ($app_id && $app_key && $app_secret && $pageId) {
+        if ($app_id && $app_secret && $pageId && $access_token) {
 
             try {
 
                 if ($pageInfo=$this->GetPageInfoById($pageId)) {
-                    if ($this->oMapper->SaveSettings($app_id,$app_key,$app_secret,$pageId,$pageInfo['page_url'])) {
+                    if ($this->oMapper->SaveSettings($app_id,$app_secret,$access_token,$pageId,$pageInfo['link'])) {
                         $sKey = 'PluginFacebook_GetSettings_id_1';
                         $this->Cache_Delete($sKey);
                     }
                 }
 
-                return false;
+                return true;
                 
             } catch (Exception $e) {
                 $this->Logger_Error('PluginFacebook_ModuleFacebook->SaveSettings: '.$e->getMessage());
@@ -384,10 +434,9 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @param int $id
      * @return
      */
-    public function GetSettings($id=1) {
+    public function GetSettings($id=1,$nocache=false) {
         $sKey = 'PluginFacebook_GetSettings_id_'.$id;
-
-        if (false === ($aResult = $this->Cache_Get($sKey))) {
+        if ($nocache==true || false === ($aResult = $this->Cache_Get($sKey))) {
 			if ($aResult=$this->oMapper->GetSettings($id)) {
 				$this->Cache_Set($aResult, $sKey, array(), 60*60*24*1);
 			}
@@ -409,11 +458,11 @@ class PluginFacebook_ModuleFacebook extends Module {
         
         $aConfig = $this->GetSettings($id);
 
-        Config::Set('plugin.facebook.application.id',$aConfig['appId']);
-        Config::Set('plugin.facebook.application.api',$aConfig['appKey']);
-        Config::Set('plugin.facebook.application.secret',$aConfig['appSecret']);
-        Config::Set('plugin.facebook.page.id',$aConfig['pageId']);
-        Config::Set('plugin.facebook.page.url',$aConfig['pageUrl']);
+        Config::Set('plugin.facebook.application.id',$aConfig['app_id']);
+        Config::Set('plugin.facebook.application.secret',$aConfig['app_secret']);
+        Config::Set('plugin.facebook.application.access_token',$aConfig['access_token']);
+        Config::Set('plugin.facebook.page.id',$aConfig['page_id']);
+        Config::Set('plugin.facebook.page.url',$aConfig['page_url']);
 
         $this->_settingsLoaded=true;
         return;
@@ -425,19 +474,52 @@ class PluginFacebook_ModuleFacebook extends Module {
      * @param array $aData
      * @return bool
      */
-    public function GetPageInfoById($id,$aData=array('name','page_url')) {
+    public function GetPageInfoById($id,$aData=array('name','link')) {
         try {
-            $aResult=$this->FB->api(array(
-                'method'=>'pages.getinfo',
-                'fields'=>$aData,
-                'page_ids'=>array($id)
-            ));
+            $aResult=$this->FB->api('/'.$id.'?fields='.implode(',',$aData));
         } catch (Exception $e){
             $this->Logger_Error('PluginFacebook_ModuleFacebook->GetPageInfoById: '.$e->getMessage());
             return false;
         }
 
-        return $aResult[0];
+        return $aResult;
     }
+
+    public function GetFacebookTopicsCollective($iPage,$iPerPage) {
+        $aFacebookTopics = $this->oMapper->GetFacebookTopics($iCount,$iPage,$iPerPage);
+        $aTopicId = array();
+        foreach($aFacebookTopics as $oFbTopic) {
+            $aTopicId[]=$oFbTopic->GetTopicId();
+        }
+
+        $aTopics = $this->Topic_GetTopicsAdditionalData($aTopicId);
+        foreach($aFacebookTopics as $oFbTopic) {
+            $oFbTopic->setTopic($aTopics[$oFbTopic->GetTopicId()]);
+            
+        }
+
+        return array(
+            'collection' => $aFacebookTopics,
+            'count' => $iCount
+        );
+    }
+
+    public function GetUserAccounts($user_id,$access_token) {
+        try {
+            if ($aResult=$this->FB->api('/'.$user_id.'/accounts', array('access_token'=>$access_token))) {
+                return $aResult['data'];
+            }
+            return false;
+        } catch (Exception $e) {
+            $this->Logger_Error('PluginFacebook_ModuleFacebook->GetUserAccounts: '.$e->getMessage());
+            return false;
+       }
+
+    }
+
+    public function SetOpenGraphHeaders($aHeaders) {
+        $this->Hook_Run('PluginFacebook_Set_OpenGraph_Headers',array('aHeaders'=>$aHeaders));
+    }
+
 }
 ?>

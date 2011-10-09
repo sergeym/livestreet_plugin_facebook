@@ -14,7 +14,7 @@
 class PluginFacebook_BlockFacebook extends Block {
 
         public function Exec() {
-            //$this->Viewer_Assign('sFacebookTemplateWebPathPlugin',Plugin::GetTemplateWebPath(__CLASS__));
+
         }
 
 }

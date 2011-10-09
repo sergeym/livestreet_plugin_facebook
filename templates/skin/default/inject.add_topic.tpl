@@ -1,5 +1,5 @@
 <div style="border-top:1px dotted navy;border-bottom:1px dotted navy;padding:5px 0; margin:10px 0;">
-<img src="{$sFacebookTemplateWebPathPlugin}images/facebook.jpg" alt="Facebook" align="right">
+<img src="{$oConfig->Get('plugin.facebook.logo_url')}" alt="Facebook" align="right">
 {if $bEditMode && $bPublished}
     {* сюда попадают при редактировании уже опубликованного в FB топика *}
     <p><strong>Этот топик опубликован в Facebook</strong></p>

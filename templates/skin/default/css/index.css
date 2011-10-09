@@ -11,155 +11,145 @@
  *
  */
 
+
+
 #PluginFacebook {
-    width:500px;
-    margin:3em auto;
+    padding: 10px 50px;
 }
 
-#PluginFacebook ul.features {
-    padding:10px;
+    /* общее */
+    #PluginFacebook a[target="_blank"] {
+        background:url("../images/external-small.png") no-repeat right;
+        padding-right:16px;
+
+    }
+
+    #PluginFacebook h1, #PluginFacebook h2 {
+        margin: 25px 0 10px 0;
+    }
+    #PluginFacebook h1 {
+        font-size: 1.7em;
+    }
+    #PluginFacebook h2 {
+        font-size: 1.5em;
+    }
+
+    /* настройка */
+    #PluginFacebook #wizard ul.test-list {
+        font-size: 1.2em;
+        margin-left: 3em;
+    }
+
+        #PluginFacebook #wizard ul.test-list li {
+            background: url("../images/clock.png") no-repeat;
+            padding-left: 20px;
+            height: 30px;
+        }
+
+            #PluginFacebook #wizard ul.test-list li.test-stage-active {
+                font-weight: bold;
+                background: url("../images/loader.gif") no-repeat;
+            }
+
+            #PluginFacebook #wizard ul.test-list li.test-stage-complete {
+                color: #008000;
+                background: url("../images/accept_blue.png") no-repeat;
+            }
+
+            #PluginFacebook #wizard ul.test-list li.test-stage-error {
+                color: black;
+                background: url("../images/stop_round.png") no-repeat;
+            }
+
+    #PluginFacebook #wizard .step-data {
+        padding: 40px;
+    }
+
+        #PluginFacebook #wizard .step-data .note {
+            font-size: 80%;
+            color: #666666;
+        }
+
+        #PluginFacebook #wizard .step-data label {
+            width: 160px;
+            display: block;
+            text-align: right;
+            height: 20px;
+            line-height: 20px;
+            float: left;
+            padding-right: 5px;
+        }
+
+        #PluginFacebook #wizard .step-data input.wide {
+            width: 270px;
+        }
+
+    #PluginFacebook #wizard #page-selector {
+        display: none;
+    }
+
+        #PluginFacebook #wizard #page-selector #page_select_rights {
+            width:24px;
+            height:22px;
+        }
+            #PluginFacebook #wizard #page-selector #page_select_rights.perm {
+                background:#66ff66;
+                background:url("../images/perm.png") no-repeat 3px 1px;
+            }
+
+            #PluginFacebook #wizard #page-selector #page_select_rights.noperm {
+                background:#ff3333;
+                background:url("../images/noperm.png") no-repeat 3px 1px;
+            }
+
+            #PluginFacebook #wizard #page-selector #page_select_rights.check {
+                background:url("../images/magnifier.png") no-repeat 3px 1px;
+            }
+
+
+            #PluginFacebook #wizard #page_permissions_warn {
+                display:none;
+                line-height:14px;
+                border:1px solid red;
+                padding:10px;
+                -moz-border-radius: 5px;
+                -webkit-border-radius: 5px;
+                -khtml-border-radius: 5px;
+                border-radius: 5px;
+                background:#ffcccc;
+            }
+
+    /* главная */
+    #PluginFacebook  ul.features {
+        margin-left: 25px;
+    }
+
+    #PluginFacebook  ul.features li {
+        font-size: 1em;
+        list-style: circle;
+        margin: 7px 0;
+    }
+
+
+/* публикации */
+#PluginFacebook  ul.info li {
+    float: left;
+    padding: 0 5px;
 }
-#PluginFacebook ul.features li {
-    list-style:circle;
-    margin:5px;
-}
 
-#PluginFacebook .description {
-    border:1px solid silver;
-    background:#eee;
-    padding:1em;
-}
+    #PluginFacebook  ul.info li.facebook_status_published {
+        background: url("../images/facebook_ok.png") no-repeat;
+        padding-left: 25px;
+    }
 
+    #PluginFacebook  ul.info li.facebook_status_blocked {
+        background: url("../images/stop_round.png") no-repeat;
+        padding-left: 25px;
+        color: #ff8c00;
+    }
 
-#adv { font-size:1.3em; margin:5px 0; }
-
-#facebook_fans { }
-
-#facebook_recs {
-    display:none;
-}
-
-div#setup {
-	background: #EEEEEE;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	-khtml-border-radius: 5px;
-	border-radius: 5px;
-	counter-reset: fieldsets;
-	padding: 20px;
-	}
-
-div#setup fieldset {
-	border: 1px dotted gray;
-	margin-bottom: 10px;
-	}
-
-div#setup fieldset legend { padding:5px 10px; margin:0px 10px; }
-
-div#setup ol {
-    margin:0;
-}
-
-div#setup ol li {
-	line-height: 30px;
-	list-style: none;
-	padding: 5px 10px;
-	margin-bottom: 2px;
-}
-
-div#setup label {
-	float: left;
-	font-size: 13px;
-	width: 150px;
-}
-
-div#setup input[type="text"], div#setup select {
-    width:220px;
-}
-
-.refresh {
-    background:url("../images/refresh.gif") no-repeat 3px 1px;
-}
-
-.perm {
-    background:#66ff66;
-    background:url("../images/perm.png") no-repeat 3px 1px;
-}
-
-.noperm {
-    background:#ff3333;
-    background:url("../images/noperm.png") no-repeat 3px 1px;
-}
-
-.check {
-    background:url("../images/magnifier.png") no-repeat 3px 1px;
-}
-
-#page_select_rights {
-    width:24px;
-    height:22px;
-}
-
-#screen-test, #screen-open,#screen-save,#screen-delete,#screen-save-compete,#page_permissions_warn,#no-pages-warn {
-    display:none;
-    line-height:14px;
-}
-
-#screen-test {
-    display:block;
-}
-
-#no-pages-warn, #page_permissions_warn {
-    border:1px solid red;
-    padding:10px;
-    -moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	-khtml-border-radius: 5px;
-	border-radius: 5px;
-    background:#ffcccc;
-}
-
-a[target="_blank"] {
-    background:url("../images/external-small.png") no-repeat right;
-    padding-right:16px;
-
-}
 
 table.money tr td {
     padding:10px;
     vertical-align:top;
 }
-
-table.money tr td form {
-    margin-top:15px;
-}
-
-dl.money, dl.money dt, dl.money dd { margin: 0; padding: 0; }
-
-dl.money { width: 100%; }
-
-dl.money dt {
-    font-weight: bold;
-    float: left;
-    clear: left;
-    width: 70px;
-    margin-bottom: 1em;
-}
-
-dl.money dd {
-    float: left;
-    width: 90px;
-    margin-bottom: 1em;
-    text-align: right;
-}
-
-#page_url {
-    background:#f0efef;
-    border:1px dotted silver;
-}
-
-#FB_plugin_author {
-    text-align:right;
-    color:silver;
-    font-size:10px;
-};

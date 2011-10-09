@@ -15,6 +15,7 @@
 class PluginFacebook_HookFacebook extends Hook {
 
         protected static $oTopic=NULL;
+        protected static $aHeaders=NULL;
 
         public function RegisterHook() {
             
@@ -27,6 +28,8 @@ class PluginFacebook_HookFacebook extends Hook {
 
                 // Заголовки OpenGraph
                 $this->AddHook("topic_show", "HookSetTopic", __CLASS__);
+                // Заголовки передаваемые из сторонних скриптов
+                $this->AddHook('PluginFacebook_Set_OpenGraph_Headers', 'HookSetOpenGraphHeaders', __CLASS__);
 
                 // Диалог редактирования топика
                 $this->AddHook("topic_edit_show", "HookSetTopic", __CLASS__);
@@ -40,20 +43,18 @@ class PluginFacebook_HookFacebook extends Hook {
                 $this->AddHook('module_rating_votetopic_after', 'HookRatingVoteTopicAfter', __CLASS__, 2);
 
                 // Обработка формы добавления и редактирования топика
-                $this->AddHook('topic_add_after', 'HookRatingEditTopicAfter', __CLASS__);
-                $this->AddHook('topic_edit_after', 'HookRatingEditTopicAfter', __CLASS__);
+                $this->AddHook('topic_add_after', 'HookAddTopicAfter', __CLASS__);
+                $this->AddHook('topic_edit_after', 'HookEditTopicAfter', __CLASS__);
         }
 
         function initAction($aVars) {
-            $this->Viewer_AddBlock(
+            /*$this->Viewer_AddBlock(
                     'right',
                     'facebook',
                     array('plugin' => 'facebook'),
                     Config::Get('plugin.facebook.facebook_block_priority')
-            );
-
-            $sWebPluginSkin=Plugin::GetTemplateWebPath(__CLASS__);
-            $this->Viewer_Assign('sWebPluginSkin', $sWebPluginSkin);
+            );*/
+            $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath(__CLASS__).'css/widget.css');
         }
 
 
@@ -89,6 +90,7 @@ class PluginFacebook_HookFacebook extends Hook {
                 $bCanPublishTopic=$this->PluginFacebook_ModuleFacebook_CanPublishTopic($oTopic);
 
                 if ($bCanPublishTopic==true) {
+                    $this->PluginFacebook_ModuleFacebook_StartAPI();
                     $this->PluginFacebook_ModuleFacebook_PublishTopic($oTopic);
                 }
             }
@@ -97,22 +99,27 @@ class PluginFacebook_HookFacebook extends Hook {
         }
 
         /**
-         * Обрабатывает добавление и редактирование топика
+         * Обрабатывает редактирование топика
          * @param  $args
          * @return bool
          */
-        public function HookRatingEditTopicAfter($args){
+        public function HookEditTopicAfter($args){
             $oTopic = $args['oTopic'];
 
             if ($oTopic->getPublish()) {
 
+                $oUserCurrent=$this->User_GetUserCurrent();
+
                 // Админские регалии
-                if($this->User_IsAuthorization() or $oUserCurrent=$this->User_GetUserCurrent() or $oUserCurrent->isAdministrator()) {
+                if ($oUserCurrent && $oUserCurrent->isAdministrator()) {
 
                     $topic_delete_facebook=getRequest('topic_delete_facebook',null,'post'); // принудительно удалить
                     $topic_publish_facebook=getRequest('topic_publish_facebook',null,'post'); // принудительно опубликовать
                     $topic_deny_facebook=getRequest('topic_deny_facebook',null,'post'); // блокировать добавление
                     $topic_allow_facebook=getRequest('topic_allow_facebook',null,'post'); // отменить блокировку
+
+                    // Инициализация API
+                    $this->PluginFacebook_ModuleFacebook_StartAPI();
 
                     // Пришел приказ публиковать
                     if ($topic_publish_facebook) {
@@ -129,43 +136,106 @@ class PluginFacebook_HookFacebook extends Hook {
                         $this->PluginFacebook_ModuleFacebook_AllowTopicPublish($oTopic);
                     }
                 }
-                
             }
-
-
             return true;
         }
 
+        /**
+         * Обрабатывает добавление топика
+         * @param  $args
+         * @return bool
+         */
+        public function HookAddTopicAfter($args){
+            $oTopic = $args['oTopic'];
+
+            if ($oTopic->getPublish()) {
+                $oUserCurrent=$this->User_GetUserCurrent();
+
+                $topic_publish_facebook=$topic_deny_facebook=null;
+
+                // Проверка админских опций
+                if ($oUserCurrent && $oUserCurrent->isAdministrator()) {
+                    $topic_publish_facebook=getRequest('topic_publish_facebook',null,'post'); // принудительно опубликовать
+                    $topic_deny_facebook=getRequest('topic_deny_facebook',null,'post'); // блокировать добавление
+                }
+
+                // Проверка на возможность публикации
+                if ($this->PluginFacebook_ModuleFacebook_CanPublishTopic($oTopic)==true && $topic_deny_facebook!==true) {
+                    $topic_publish_facebook=true;
+                }
+
+                // Трубуется опубликовать
+                if ($topic_publish_facebook) {
+                    // Подгрузка блога, т.к. при публикации используется его заголовок
+                    $oTopic->setBlog($this->Blog_GetBlogById($oTopic->GetBlogId()));
+                    // Инициализация API
+                    $this->PluginFacebook_ModuleFacebook_StartAPI();
+                    // публикация
+                    $this->PluginFacebook_ModuleFacebook_PublishTopic($oTopic);
+                } elseif ($topic_deny_facebook) { // требуется заблокировать
+                    // запрет публикации в ФБ
+                    $this->PluginFacebook_ModuleFacebook_PreventTopicPublish($oTopic);
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Запоминает топик до последующей обработки хуком template_html_head_begin
+         * @param $args
+         * @return void
+         */
         public function HookSetTopic($args) {
             self::$oTopic=$args['oTopic'];
         }
 
+        /**
+         * Запоминает переданные заголовки до последующей обработки хуком template_html_head_begin
+         * @param $args
+         * @return void
+         */
+        public function HookSetOpenGraphHeaders($args) {
+            if (is_array($args) && isset($args['aHeaders'])) {
+                self::$aHeaders = $args['aHeaders'];
+            }
+        }
+
         // вставка OpenGraf тэгов в случае, если ранее был определен топик
         public function HookInsertOpenGraphHeaders() {
-            if (!self::$oTopic) return;
+            if (!self::$oTopic && !self::$aHeaders) return;
 
-            // список media-данных
-            $aMedia=$this->PluginFacebook_ModuleFacebook_getMedia(self::$oTopic,true);
-            
-            if (count($aMedia)>0) {
-                switch($aMedia[0]['type']) {
-                    case 'flash':
-                        $sImage=$aMedia[0]['imgsrc'];
+            $sTitle = $aVideo = $sImage = null;
+
+            if (self::$aHeaders) {
+                $aMedia = self::$aHeaders;
+                if (isset(self::$aHeaders['title'])) {
+                    $sTitle = self::$aHeaders['title'];
+                }
+            } elseif (self::$oTopic) {
+                // Получаем список media-данных из топика
+                $aMedia=$this->PluginFacebook_Facebook_GetMedia(self::$oTopic,true);
+                $sTitle = self::$oTopic->getTitle();
+            }
+
+            if ($aMedia) {
+                switch($aMedia['type']) {
+                    case 'video':
+                        $aVideo=$aMedia;
                     break;
                     case 'image':
-                        $sImage=$aMedia[0]['src'];
+                        $sImage=$aMedia['picture'];
                     break;
                 }
             } else {
                 // В случае отсутствия media-данных подставляем картинку по умолчанию
                 $sImage=Config::Get('plugin.facebook.default_post_image');
                 // если не задана своя картинка, использовать дефолтную
-                if (!$sImage) $sImage=Plugin::GetTemplateWebPath('facebook').'images/default.jpg';
+                if (!$sImage) $sImage=Plugin::GetTemplateWebPath(__CLASS__).'images/default.jpg';
             }
-
             // Передаем в шаблон данные
-            $this->Viewer_Assign('sTitle',self::$oTopic->getTitle());
+            $this->Viewer_Assign('sTitle',$sTitle);
             $this->Viewer_Assign('sImage',$sImage);
+            $this->Viewer_Assign('aVideo',$aVideo);
 		    return $this->Viewer_Fetch(Plugin::GetTemplatePath('facebook').'/inject.header.tpl');
         }
 }
