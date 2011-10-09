@@ -99,13 +99,13 @@ function onFinish(step) {
 }
 
 function showMessage(mode,sTitile,sMsg) {
-    if (typeof(ls)=='object' && typeof(ls.msg)=='function') { // ls 0.4
+    if (ls!==undefined) { // ls 0.4
         if (mode=='error') {
             ls.msg.error(sTitile, sMsg);
         } else {
             ls.msg.notice(sTitile, sMsg);
         }
-    } else if (typeof(msgErrorBox)=='object' && typeof(msgNoticeBox)=='object') { // ls 0.5
+    } else if (msgErrorBox!==undefined) { // ls 0.5
         if (mode=='error') {
             msgErrorBox.alert(sTitile,sMsg);
         } else {
