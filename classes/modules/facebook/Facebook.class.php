@@ -206,9 +206,8 @@ class PluginFacebook_ModuleFacebook extends Module {
     }
 
     protected function _getDataByVimeoClipId($sId) {
-
-        if ($xml = simplexml_load_file('http://vimeo.com/api/v2/video/'.$sId.'.xml')) {
-            try {
+        try {
+            if ($xml = simplexml_load_file('http://vimeo.com/api/v2/video/'.$sId.'.xml')) {
                 return array(
                     'picture' => ''.$xml->video->thumbnail_small,
                     'type' => 'application/x-shockwave-flash',
@@ -217,11 +216,10 @@ class PluginFacebook_ModuleFacebook extends Module {
                     'type' => 'video',
                     'videotype' => 'application/x-shockwave-flash'
                 );
-            } catch (Exception $e) {
-                return null;
             }
+        } catch (Exception $e) {
+            return null;
         }
-
     }
 
     protected function _getDataByYoutubeClipId($sId) {

@@ -36,6 +36,8 @@ return array(
     'saving' => 'Сохранение',
     'to_database' => 'настроек в БД',
     'step' => 'Шаг',
+    'installed' => 'Установлено',
+    'not_installed' => 'Не установлено',
 
     'create_facebook_app' => 'Для работы этого плагина необходомо <a href="http://www.facebook.com/developers/createapp.php" target="_blank">создать приложение в Facebook.</a>',
     'create_facebook_app_note' => 'замечание: в настройках приложения, укажите URL и домен Вашего сайта.',

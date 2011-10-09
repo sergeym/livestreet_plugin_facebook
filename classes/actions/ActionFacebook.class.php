@@ -59,6 +59,9 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         $this->Viewer_Assign('pluginCfg',$aConfig);
         $this->Viewer_Assign('facebookRightsOK',false);
 
+        $this->Viewer_Assign('bCurlInstalled',function_exists('curl_init'));
+        $this->Viewer_Assign('bSimpleXmlInstalled',function_exists('simplexml_load_file'));
+
         if (Config::Get('plugin.facebook.js')!=='jquery') {
             $this->Viewer_AppendScript(Plugin::GetTemplateWebPath(__CLASS__).'js/jquery.js');
             $this->Viewer_AppendScript(Plugin::GetTemplateWebPath(__CLASS__).'js/jquery.noconflict.js');

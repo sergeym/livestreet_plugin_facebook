@@ -42,6 +42,13 @@
                 <span class="note">{$aLang.create_facebook_app_note}</span>
             </p>
 
+            <div class="requires">
+                <p>Эти библиотеки необходимы для работы плагина:</p>
+                <p><a href="http://php.net/manual/en/book.curl.php" target="_blank">cUrl</a>: {if $bCurlInstalled}{$aLang.installed}{else}{$aLang.not_installed}{/if}</p>
+                <p><a href="http://php.net/manual/en/book.simplexml.php" target="_blank">SimpleXml</a>: {if $bSimpleXmlInstalled}{$aLang.installed}{else}{$aLang.not_installed}{/if}</p>
+            </div>
+
+
             <p>{$aLang.fill_facebook_app_data}</p>
             <p><label>{$aLang.application_id}:</label><input class="wide" id="app_id" name="app_id" type="text" placeholder="{$aLang.application_id}" value="{$pluginCfg.app_id}" required="required" autofocus="autofocus"></p>
             <p><label>{$aLang.application_secret}:</label><input class="wide" id="app_secret" name="app_secret" type="text" placeholder="{$aLang.application_secret}" value="{$pluginCfg.app_secret}" required="required"></p>
