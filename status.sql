@@ -1,0 +1,2 @@
+ALTER TABLE `prefix_plugin_facebook_topic_list` ADD COLUMN `status` ENUM('published','blocked') NOT NULL AFTER `publish_id`;
+ALTER TABLE `prefix_plugin_facebook_topic_list` CHANGE COLUMN `publish_id` `publish_id` CHAR(32) NULL DEFAULT NULL AFTER `date`;

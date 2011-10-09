@@ -1,0 +1,5 @@
+/* виджет */
+#block_facebook {}
+#block_facebook #facebook_fans { }
+#block_facebook #facebook_recs { display:none; }
+#block_facebook #plugin_author { text-align:right; color:silver; font-size:10px; }
