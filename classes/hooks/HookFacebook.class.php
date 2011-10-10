@@ -136,6 +136,10 @@ class PluginFacebook_HookFacebook extends Hook {
                         $this->PluginFacebook_ModuleFacebook_AllowTopicPublish($oTopic);
                     }
                 }
+
+                // Чистка кэша при апдэйте
+                $sCacheKey = 'open_graph_topic_id_'.$oTopic->getId();
+                $this->Cache_Delete($sCacheKey);
             }
             return true;
         }

@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `prefix_plugin_facebook_settings` (
 	`id` INT(10) NULL DEFAULT NULL,
 	`app_id` CHAR(20) NULL DEFAULT NULL,
 	`app_secret` CHAR(48) NULL DEFAULT NULL,
-	`access_token` VARCHAR(1024) NULL DEFAULT NULL,
+	`access_token` TEXT NULL,
 	`page_id` CHAR(20) NULL DEFAULT NULL,
-	`page_url` VARCHAR(1024) NULL DEFAULT NULL
+	`page_url` TEXT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

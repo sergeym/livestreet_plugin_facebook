@@ -81,6 +81,9 @@ class PluginFacebook_ModuleFacebook extends Module {
         // записываем в опубликованные
         if ($aPublishId && isset($aPublishId['id'])) {
             $this->oMapper->TopicPublish($oTopic->getId(),$aPublishId['id']);
+
+            $sKey='PluginFacebook_GetPublishInfoByTopic_'.$oTopic->getId();
+            $this->Cache_Delete($sKey);
             return $aPublishId['id'];
         }
 
@@ -103,6 +106,8 @@ class PluginFacebook_ModuleFacebook extends Module {
      */
     public function AllowTopicPublish($oTopic) {
         $this->oMapper->DeleteTopicPublish($oTopic->GetId());
+        $sKey='PluginFacebook_GetPublishInfoByTopic_'.$oTopic->getId();
+        $this->Cache_Delete($sKey);
     }
 
     /**
@@ -173,9 +178,8 @@ class PluginFacebook_ModuleFacebook extends Module {
             // отдаем без ключей
             $_aRes = array_values($aMedia);
             $aResult = count($_aRes)>0?$_aRes[0]:array();
-            //$this->Logger_Error($oTopic->GetId().':'.$oTopic->GetTitle().":".print_r($aResult,true));
             // Кладем в кэш на год
-            $this->Cache_Set($aResult, $sCacheKey, array('topic_update'), 60*60*24*31*12);
+            $this->Cache_Set($aResult, $sCacheKey, array('facebook_reset'), 60*60*24*31*12);
         }
         //print_r($aResult);
         return $aResult;
@@ -316,7 +320,6 @@ class PluginFacebook_ModuleFacebook extends Module {
         $sKey='PluginFacebook_GetPublishInfoByTopic_'.$oTopic->getId();
 
         $aResult=$this->Cache_Get($sKey);
-
         if ($aResult && isset($aResult['bResult'])) {
             // вытаскиваем результат из кэша
             $bResult=$aResult['bResult'];
@@ -324,7 +327,7 @@ class PluginFacebook_ModuleFacebook extends Module {
             // если в кэше не нашли, получаем заново
             $bResult=$this->oMapper->GetPublishInfoByTopic($oTopic);
             // и сохраняем в кэш
-            $this->Cache_Set(array('bResult'=>$bResult),$sKey);
+            $this->Cache_Set(array('bResult'=>$bResult),$sKey,array('facebook_reset'));
         }
         return $bResult;
     }
@@ -436,7 +439,7 @@ class PluginFacebook_ModuleFacebook extends Module {
         $sKey = 'PluginFacebook_GetSettings_id_'.$id;
         if ($nocache==true || false === ($aResult = $this->Cache_Get($sKey))) {
 			if ($aResult=$this->oMapper->GetSettings($id)) {
-				$this->Cache_Set($aResult, $sKey, array(), 60*60*24*1);
+				$this->Cache_Set($aResult, $sKey, array('facebook_reset'), 60*60*24*1);
 			}
 		}
 

@@ -1,0 +1,3 @@
+ALTER TABLE `prefix_plugin_facebook_topic_list`  CHANGE COLUMN `publish_id` `publish_id` CHAR(32) NULL DEFAULT NULL AFTER `date`;
+ALTER TABLE `prefix_plugin_facebook_settings`  CHANGE COLUMN `appId` `app_id` CHAR(20) NULL DEFAULT NULL AFTER `id`,  CHANGE COLUMN `appKey` `app_secret` CHAR(48) NULL DEFAULT NULL AFTER `app_id`,  CHANGE COLUMN `appSecret` `access_token` TEXT NULL DEFAULT NULL AFTER `app_secret`,  CHANGE COLUMN `pageId` `page_id` CHAR(20) NULL DEFAULT NULL AFTER `access_token`,  CHANGE COLUMN `pageUrl` `page_url` TEXT NULL DEFAULT NULL AFTER `page_id`;
+DELETE FROM `prefix_plugin_facebook_settings`;

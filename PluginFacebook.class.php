@@ -20,17 +20,24 @@ class PluginFacebook extends Plugin {
      * @return boolean
      */
 	public function Activate() {
+        
 		// Активация
         if (!$this->isTableExists('prefix_plugin_facebook_topic_list') && !$this->isTableExists('prefix_plugin_facebook_settings')) {
+            // Первая установка
 			$this->ExportSQL(dirname(__FILE__).'/dump.sql');
-		}
-
-        // проверка столбца "статус". Для избежания конфликта с предыдущими версиями
-        /*if (!($this->isFieldExists('prefix_plugin_facebook_topic_list','status'))) {
-			$this->ExportSQL(dirname(__FILE__).'/status.sql');
-		}*/
-
-
+		} elseif (!$this->isTableExists('prefix_plugin_facebook_settings')) {
+            // Обновление с версии 0.1
+            $this->ExportSQL(dirname(__FILE__).'/dump_01_05.sql');
+        } else {
+            // Обновление с версии 0.3
+            $sTableName = str_replace('prefix_', Config::Get('db.table.prefix'), 'prefix_plugin_facebook_settings');
+            $sQuery="SHOW FIELDS FROM `{$sTableName}`";
+            if ($aRows=$this->Database_GetConnect()->select($sQuery)) {
+                if ($aRows[1]['Field']=='appId') { // Старый формат таблицы настроек
+                    $this->ExportSQL(dirname(__FILE__).'/dump_03_05.sql');
+                }
+            }
+        }
 		return true;
 	}
 
@@ -49,6 +56,8 @@ class PluginFacebook extends Plugin {
      * @return boolean
      */
 	public function Deactivate() {
+        // Чистка кэша
+        $this->Cache_Clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG,array("facebook_reset"));
 		return true;
 	}
 }
