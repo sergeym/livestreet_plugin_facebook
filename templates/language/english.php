@@ -18,6 +18,8 @@ return array(
     /* виджет */
     'friends' => 'Friends',
     'recommendations' => 'Recommendations',
+    'plugin_is_not_configured' => 'Plugin is not configured.',
+    'run_setup' => 'Run setup!',
 
     /* меню */
     'about_plugin' => 'About',
@@ -43,7 +45,7 @@ return array(
 
     'fill_facebook_app_data' => 'Application data:',
     'application_id' => 'Application ID',
-    'application_secret' => 'Application Secret:',
+    'application_secret' => 'Application Secret',
 
     'select_facebook_page' => 'Please, select facebook page.',
     'create_facebook_page' => 'You can <a href="http://www.facebook.com/pages/create.php" target="_blank">make a new Facebook page</a> now.',

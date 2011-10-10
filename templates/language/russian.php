@@ -19,6 +19,8 @@ return array(
     /* виджет */
     'friends' => 'Друзья',
     'recommendations' => 'Рекомендации',
+    'plugin_is_not_configured' => 'Плагин не настроен.',
+    'run_setup' => 'Настроить!',
 
     /* меню */
     'about_plugin' => 'О плагине',
@@ -44,7 +46,7 @@ return array(
 
     'fill_facebook_app_data' => 'Укажите данные созданного приложения:',
     'application_id' => 'ID приложения',
-    'application_secret' => 'Cекрет приложения:',
+    'application_secret' => 'Cекрет приложения',
 
     'select_facebook_page' => 'На этом шаге необходимо выбрать страницу, с которой будет взаимодействовать приложение.',
     'create_facebook_page' => 'Если Вы еще не создали страницу в Facebook, <a href="http://www.facebook.com/pages/create.php" target="_blank">сделайте это</a> сейчас.',

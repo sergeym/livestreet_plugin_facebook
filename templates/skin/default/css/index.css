@@ -84,9 +84,17 @@
             width: 270px;
         }
 
+        #PluginFacebook #wizard .step-data p {
+            padding: 3px;
+            margin: 3px;
+        }
+
     #PluginFacebook #wizard #page-selector {
         display: none;
     }
+        #PluginFacebook #wizard #page-selector select {
+            width: 350px;
+        }
 
         #PluginFacebook #wizard #page-selector #page_select_rights {
             width:24px;
