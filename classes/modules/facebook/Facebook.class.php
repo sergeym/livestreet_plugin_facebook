@@ -200,7 +200,7 @@ class PluginFacebook_ModuleFacebook extends Module {
                 }
             break;
             case 'youtube.com':
-                if (preg_match('/\/v\/(\w+)&/i',$sVideo,$aMatches)) {
+                if (preg_match('/\/v\/(.+)&/i',$sVideo,$aMatches)) {
                     return array_merge(array('source'=>$sVideo),$this->_getDataByYoutubeClipId($aMatches[1]));
                 } else {
                     return null;
