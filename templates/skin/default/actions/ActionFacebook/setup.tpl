@@ -27,7 +27,7 @@
             </span>
          </a></li>
             <li><a href="#step-4">
-            <label class="stepNumber">3</label>
+            <label class="stepNumber">4</label>
             <span class="stepDesc">
                {$aLang.saving}<br />
                <small>{$aLang.to_database}</small>
