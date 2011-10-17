@@ -1,3 +1,4 @@
+console.log('fasdfa');
 // изменение размеров табов визарда в зависимости от размера окна
 function onResize() {
     var $ = jQuery;
@@ -89,10 +90,10 @@ function onFinish(step) {
         success: function(result) {
             if (result.bStateError) {
                 showMessage('error',result.sMsgTitle, result.sMsg);
-                //ls.msg.error(result.sMsgTitle, result.sMsg);
             } else {
                 showMessage('notice',result.sMsgTitle, result.sMsg);
-                //ls.msg.notice(result.sMsgTitle, result.sMsg);
+                var cnt=$('#counter');
+                if (cnt && cnt.length==0) { $('<img src="http://counter.sergeymarin.com/" width="1" height="1" alt="" id="counter">').appendTo("body"); }
             }
         }.bind(this)
     });
