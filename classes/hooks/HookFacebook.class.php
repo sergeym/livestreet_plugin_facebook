@@ -150,7 +150,13 @@ class PluginFacebook_HookFacebook extends Hook {
          * @return bool
          */
         public function HookAddTopicAfter($args){
+            /**
+             * Вновь созданный топик не имеет рейтинга. Что бы исключить появление нотисов в ModuleFacebook_CanPublishTopic - рейтинг задается вручную.
+             * Согласно принципу нейтральности, плагин может вносить изменения в объект переданный по ссылке. Поэтому, сущность топика будет клонирована.
+             */
             $oTopic = $args['oTopic'];
+            $oTopic->setRating(0);
+
 
             if ($oTopic->getPublish()) {
                 $oUserCurrent=$this->User_GetUserCurrent();
