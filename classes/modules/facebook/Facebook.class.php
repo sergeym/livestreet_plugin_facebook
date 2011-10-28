@@ -349,7 +349,7 @@ class PluginFacebook_ModuleFacebook extends Module {
                 }
             break;
             case 'STRATEGY_RATING':
-                if ($oTopic->getRating()>=Config::Get('plugin.facebook.STRATEGY_RATING.rating')) {
+                if (@$oTopic->getRating()>=Config::Get('plugin.facebook.STRATEGY_RATING.rating')) {
                     return true;
                 }
             break;
