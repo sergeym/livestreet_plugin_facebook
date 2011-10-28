@@ -154,7 +154,7 @@ class PluginFacebook_HookFacebook extends Hook {
              * Вновь созданный топик не имеет рейтинга. Что бы исключить появление нотисов в ModuleFacebook_CanPublishTopic - рейтинг задается вручную.
              * Согласно принципу нейтральности, плагин может вносить изменения в объект переданный по ссылке. Поэтому, сущность топика будет клонирована.
              */
-            $oTopic = $args['oTopic'];
+            $oTopic = clone $args['oTopic'];
             $oTopic->setRating(0);
 
 
