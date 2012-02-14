@@ -1,5 +1,5 @@
         <meta property="fb:app_id" content="{cfg name="plugin.facebook.application.id"}" />
-        <meta property="og:type" content="artile" />
+        <meta property="og:type" content="article" />
         {if $sTitle}<meta property="og:title" content="{$sTitle}" />{/if}
 
         {if $sImage}<meta property="og:image" content="{$sImage}" />{/if}

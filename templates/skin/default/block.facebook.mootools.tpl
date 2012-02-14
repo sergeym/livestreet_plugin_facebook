@@ -30,7 +30,11 @@
             </div>
 
             <div id="plugin_author">
-                Plugin Facebook by <a style="color:silver;" href="http://sergeymarin.com#ls-facebook">Sergey Marin</a>
+                {if $sAction=='index' or $sEvent=='good'}
+                    Plugin Facebook by <a style="color:silver;" href="http://sergeymarin.com#ls-facebook">Sergey Marin</a>
+                {else}
+                    <noindex>Plugin Facebook by <a style="color:silver;" href="http://sergeymarin.com#ls-facebook" rel="nofollow">Sergey Marin</a></noindex>
+                {/if}
                 {hook run='block_facebook_copyright_item'}
             </div>
         {else}
