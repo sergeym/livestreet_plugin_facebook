@@ -40,7 +40,7 @@ return array(
     'installed' => 'Installed',
     'not_installed' => 'Not installed',
 
-    'create_facebook_app' => 'You can <a href="http://www.facebook.com/developers/createapp.php" target="_blank">make a new Facebook application</a> for this plugin.',
+    'create_facebook_app' => 'You can <a href="https://developers.facebook.com/apps" target="_blank">make a new Facebook application</a> for this plugin.',
     'create_facebook_app_note' => 'note: fill site URL and domain in application settings.',
 
     'fill_facebook_app_data' => 'Application data:',

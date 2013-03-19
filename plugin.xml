@@ -8,11 +8,11 @@
                 <lang name="default">Sergey Marin</lang>
                 <lang name="russian">Сергей Марин</lang>
         </author>
-        <homepage>http://sergeymarin.com/</homepage>
-        <version>0.5.1</version>
+        <homepage>http://facebook-for-livestreet.ru/</homepage>
+        <version>1.0.1</version>
         <settings>/facebook/</settings>
         <requires>
-                <livestreet>0.4.2</livestreet>
+                <livestreet>1.*</livestreet>
                 <plugins>
 
                 </plugins>

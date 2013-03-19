@@ -13,7 +13,7 @@
  */
 
 return array(
-	'plugin_facebook_setup_title' => 'Настройка плагина Facebook',
+	'setup_title' => 'Настройка плагина Facebook',
 	'plugin_facebook' => 'Плагин Facebook',
 
     /* виджет */
@@ -41,7 +41,7 @@ return array(
     'installed' => 'Установлено',
     'not_installed' => 'Не установлено',
 
-    'create_facebook_app' => 'Для работы этого плагина необходимо <a href="http://www.facebook.com/developers/createapp.php" target="_blank">создать приложение в Facebook.</a>',
+    'create_facebook_app' => 'Для работы этого плагина необходимо <a href="https://developers.facebook.com/apps" target="_blank">создать приложение в Facebook.</a>',
     'create_facebook_app_note' => 'замечание: в настройках приложения, укажите URL и домен Вашего сайта.',
 
     'fill_facebook_app_data' => 'Укажите данные созданного приложения:',

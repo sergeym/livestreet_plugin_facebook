@@ -45,15 +45,11 @@ class PluginFacebook_HookFacebook extends Hook {
                 // Обработка формы добавления и редактирования топика
                 $this->AddHook('topic_add_after', 'HookAddTopicAfter', __CLASS__);
                 $this->AddHook('topic_edit_after', 'HookEditTopicAfter', __CLASS__);
+
+                $this->AddHook('template_content_end', 'TemplateContentEnd', __CLASS__, 2);
         }
 
         function initAction($aVars) {
-            /*$this->Viewer_AddBlock(
-                    'right',
-                    'facebook',
-                    array('plugin' => 'facebook'),
-                    Config::Get('plugin.facebook.facebook_block_priority')
-            );*/
             $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath(__CLASS__).'css/widget.css');
         }
 
@@ -157,7 +153,6 @@ class PluginFacebook_HookFacebook extends Hook {
             $oTopic = clone $args['oTopic'];
             $oTopic->setRating(0);
 
-
             if ($oTopic->getPublish()) {
                 $oUserCurrent=$this->User_GetUserCurrent();
 
@@ -247,5 +242,12 @@ class PluginFacebook_HookFacebook extends Hook {
             $this->Viewer_Assign('sImage',$sImage);
             $this->Viewer_Assign('aVideo',$aVideo);
 		    return $this->Viewer_Fetch(Plugin::GetTemplatePath('facebook').'/inject.header.tpl');
+        }
+
+        public function TemplateContentEnd($aVars)
+        {
+            if ($this->PluginFacebook_Facebook_Check()) {
+                return $this->Viewer_Fetch(Plugin::GetTemplatePath(__CLASS__).'/facebook.counter.tpl');
+            }
         }
 }

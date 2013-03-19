@@ -22,6 +22,8 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         if (!$this->oUserCurrent or !$this->oUserCurrent->isAdministrator()) {
 			return $this->EventNotFound();
 		}
+
+        $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath(__CLASS__).'css/index.css');
     }
 
     protected function RegisterEvent() {
@@ -46,7 +48,7 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         $this->Viewer_Assign('facebookRightsOK',false);
 
         // меняем заголовок старницы
-        $this->Viewer_AddHtmlTitle($this->Lang_Get('plugin_facebook_setup_title'));
+        $this->Viewer_AddHtmlTitle($this->Lang_Get('plugin.facebook.setup_title'));
     }
 
     /**
@@ -62,16 +64,11 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         $this->Viewer_Assign('bCurlInstalled',function_exists('curl_init'));
         $this->Viewer_Assign('bSimpleXmlInstalled',function_exists('simplexml_load_file'));
 
-        if (Config::Get('plugin.facebook.js')!=='jquery') {
-            $this->Viewer_AppendScript(Plugin::GetTemplateWebPath(__CLASS__).'js/jquery.js');
-            $this->Viewer_AppendScript(Plugin::GetTemplateWebPath(__CLASS__).'js/jquery.noconflict.js');
-        }
-
         $this->Viewer_AppendScript(Plugin::GetTemplateWebPath(__CLASS__).'js/jquery.smartWizard-2.0.min.js');
         $this->Viewer_AppendScript(Plugin::GetTemplateWebPath(__CLASS__).'js/jsetup.js');
         $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath(__CLASS__).'css/smart_wizard.css');
         // меняем заголовок старницы
-        $this->Viewer_AddHtmlTitle($this->Lang_Get('plugin_facebook_setup_title'));
+        $this->Viewer_AddHtmlTitle($this->Lang_Get('plugin.facebook.setup_title'));
     }
 
     /**
@@ -89,7 +86,7 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         $this->Viewer_Assign('aTopics',$aTopics);
 		$this->Viewer_Assign('aPaging',$aPaging);
         // меняем заголовок старницы
-        $this->Viewer_AddHtmlTitle($this->Lang_Get('plugin_facebook_setup_title'));
+        $this->Viewer_AddHtmlTitle($this->Lang_Get('plugin.facebook.setup_title'));
     }
 
     /**
@@ -200,24 +197,10 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         }
     }
 
-    public function _AddBlock($sPlace,$sPath) {
-        $_v = substr(LS_VERSION,0,3);
-        switch ($_v) {
-            case '0.4':
-                $this->Viewer_AddBlock($sPlace,$this->getTemplatePathPlugin().$sPath);
-                break;
-            case '0.5':
-            default:
-                $this->Viewer_AddBlock($sPlace,$sPath,array('plugin'=>'facebook'));
-        }
-
-
-    }
-
     public function EventShutdown() {
         $this->Viewer_Assign('sEvent', $this->sCurrentEvent);
         $this->Viewer_Assign('sMenuItemSelect', 'facebook');
-        $this->_AddBlock('right','actions/ActionFacebook/sidebar.tpl');
+        $this->Viewer_AddBlock('right','actions/ActionFacebook/sidebar.tpl',array('plugin'=>'facebook'));
         $this->Viewer_AddMenu('facebook', Plugin::GetTemplatePath(__CLASS__).'/menu.facebook.tpl');
     }
 }

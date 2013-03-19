@@ -30,14 +30,13 @@ class PluginFacebook extends Plugin {
             $this->ExportSQL(dirname(__FILE__).'/dump_01_05.sql');
         } else {
             // Обновление с версии 0.3
-            $sTableName = str_replace('prefix_', Config::Get('db.table.prefix'), 'prefix_plugin_facebook_settings');
-            $sQuery="SHOW FIELDS FROM `{$sTableName}`";
-            if ($aRows=$this->Database_GetConnect()->select($sQuery)) {
-                if ($aRows[1]['Field']=='appId') { // Старый формат таблицы настроек
-                    $this->ExportSQL(dirname(__FILE__).'/dump_03_05.sql');
-                }
+            if ($this->isFieldExists('prefix_plugin_facebook_settings','appId')) { // Старый формат таблицы настроек
+                $this->ExportSQL(dirname(__FILE__).'/dump_03_05.sql');
             }
         }
+
+        $this->PluginFacebook_Facebook_Activate();
+
 		return true;
 	}
 
@@ -46,8 +45,6 @@ class PluginFacebook extends Plugin {
      * @return void
      */
 	public function Init() {
-        $this->Viewer_AppendStyle(Plugin::GetTemplateWebPath(__CLASS__).'css/index.css');
-        $this->Viewer_AppendScript(Plugin::GetTemplateWebPath(__CLASS__).'js/facebook.js');
         Config::Set('plugin.facebook.logo_url',Plugin::GetTemplateWebPath(__CLASS__).Config::Get('plugin.facebook.logo_url'));
 	}
 

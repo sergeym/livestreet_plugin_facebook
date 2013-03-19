@@ -60,8 +60,6 @@ $config['page']['domain']=parse_url(Config::Get('path.root.web'),PHP_URL_HOST);
 
 
 
-
-
 /************************
     OpenGraph
 ************************/
@@ -85,20 +83,5 @@ $config['db']['table']['plugin_facebook_settings'] = '___db.table.prefix___plugi
 // Настройка роутера
 // подсказка по установке http://sitename.com/facebook/
 Config::Set('router.page.facebook', 'PluginFacebook_ActionFacebook');
-
-// Определение подключенного фреймворка
-if (substr(LS_VERSION,0,3)=='0.4') {
-    $config['js']='mootools';
-} else {
-    $skin = Config::Get('view.skin');
-    switch($skin) {
-        case 'new':
-            $config['js']='mootools';
-        break;
-        case 'new-jquery':
-        default:
-            $config['js']='jquery';
-    }
-}
 
 return $config;

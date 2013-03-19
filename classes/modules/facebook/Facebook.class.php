@@ -12,6 +12,9 @@
  *
  */
 class PluginFacebook_ModuleFacebook extends Module {
+
+    const ACTIVATION_COOKIE_NAME = 'facebook-plugin-activation';
+
 	protected $FB=NULL; // API Facebook
 	protected $oMapper;
 	protected $aCfg=NULL;
@@ -522,5 +525,25 @@ class PluginFacebook_ModuleFacebook extends Module {
         $this->Hook_Run('PluginFacebook_Set_OpenGraph_Headers',array('aHeaders'=>$aHeaders));
     }
 
+    /**
+     * @return bool
+     */
+    public function Activate() {
+        setcookie(self::ACTIVATION_COOKIE_NAME,1,time()+60*60*24,Config::Get('sys.cookie.path'),Config::Get('sys.cookie.host'));
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function Check() {
+        $bResult = false;
+
+        if (isset($_COOKIE[PluginFacebook_ModuleFacebook::ACTIVATION_COOKIE_NAME])) {
+            setcookie(self::ACTIVATION_COOKIE_NAME,1,time()-60*60*24,Config::Get('sys.cookie.path'),Config::Get('sys.cookie.host'));
+            $bResult = true;
+        }
+
+        return $bResult;
+    }
 }
-?>

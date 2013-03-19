@@ -1,7 +1,5 @@
-console.log('fasdfa');
 // изменение размеров табов визарда в зависимости от размера окна
 function onResize() {
-    var $ = jQuery;
     var width = Math.round($('#wizard').prop('clientWidth')/4)-31;
     $('#wizard ul.anchor li a').css('width',width+'px');
     $('#wizard ul.anchor li a .stepDesc').css('font-size',Math.round(width/12)+'px');
@@ -10,7 +8,6 @@ function onResize() {
 
 // обработчик переходов
 function onLeaveStep(step){
-    var $ = jQuery;
     var app_id = $('input#app_id').val();
     var app_secret = $('input#app_secret').val();
     var page_id = $('select#page_select').find('option:selected').val();
@@ -65,7 +62,6 @@ function onLeaveStep(step){
 
 // Сохранение
 function onFinish(step) {
-    var $ = jQuery;
     var params = {};
     params['app_id'] = $('#fin_app_id').val();;
     params['app_secret'] = $('#fin_app_secret').val();;
@@ -126,7 +122,6 @@ function compareNames(a, b) {
 
 // Обновить список страниц
 function refreshPages() {
-    var $ = jQuery;
     var self = this;
     $('#login-button').hide('fast',function(){
         $('#page-selector').show('fast');
@@ -166,7 +161,6 @@ function refreshPages() {
 
 // начать тест. 1 - публикация в ленту. 2 - удаление.
 function makeTest() {
-    var $ = jQuery;
     var params = {};
     params['app_id'] = $('input#app_id').val();
     params['app_secret'] = $('input#app_secret').val();
