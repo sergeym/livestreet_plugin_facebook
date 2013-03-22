@@ -63,8 +63,8 @@ function onLeaveStep(step){
 // Сохранение
 function onFinish(step) {
     var params = {};
-    params['app_id'] = $('#fin_app_id').val();;
-    params['app_secret'] = $('#fin_app_secret').val();;
+    params['app_id'] = $('#fin_app_id').val();
+    params['app_secret'] = $('#fin_app_secret').val();
     params['page_id'] = $('#fin_page_id').val();
     params['access_token'] = $('#fin_access_token').val();
     params['action'] = 'save';
@@ -130,33 +130,53 @@ function refreshPages() {
     $('#login-button').hide();
     $('#page-selector').show();
 
-    FB.api('/me/accounts', 'get', {fields:'name,link,category,access_token'}, function(response) {
-        var page_id=null;
-        // Если модуль уже настроен, то в page_select уже выбрана эта страница.
-        page_id = $('select#page_select').find('option:selected').val();
-        // Очистка селектбокса со страничками
-        $('select#page_select option').remove();
-       // Добавляем страницы в селектбокс
-        var _prevCat, _curGroup;
-        for(var i=0;i<response.data.length;i++) {
-            if (i==0 || _prevCat!==response.data[i].category) {
-                if (i>0) { _curGroup.prependTo($('select#page_select')); }
-                _curGroup = $('<optgroup>').attr('label', response.data[i].category);
-            }
-            $('<option>').attr('selected', ((page_id && response.data[i].id==page_id)?'selected':false)).attr('access_token',response.data[i].access_token).attr('value', response.data[i].id).attr('link', response.data[i].link).text(response.data[i].name).prependTo(_curGroup);
-            _prevCat = response.data[i].category;
-        }
-        _curGroup.prependTo($('select#page_select'));
 
-        // варнинг об отсутствии страниц
-        if ($('select#page_select option').length>0) {
-            $('div#no-pages-warn').hide();
-        } else {
-            $('div#no-pages-warn').show();
-        }
-        // Активируем заполненный селектбокс
-        $('select#page_select').attr('disabled',false);
+    FB.getLoginStatus(function(response) {
+        var accessToken = response.authResponse.accessToken;
+        var params = {
+                client_id: $('#app_id').val(),
+                client_secret: $('#app_secret').val(),
+                access_token: accessToken
+            };
+
+        ls.ajax(aRouter.facebook+'get-ajax-extended-token',params, function(result) {
+
+            if (result.bStateError == false) {
+                // Запрос списка страниц пользователя с расширеным ключем
+                FB.api('/me/accounts', 'get', {fields:'name,link,category,access_token', access_token:result.access_token}, function(response) {
+                    var page_id=null;
+                    // Если модуль уже настроен, то в page_select уже выбрана эта страница.
+                    page_id = $('select#page_select').find('option:selected').val();
+                    // Очистка селектбокса со страничками
+                    $('select#page_select option').remove();
+                    // Добавляем страницы в селектбокс
+                    var _prevCat, _curGroup;
+                    for(var i=0;i<response.data.length;i++) {
+                        if (i==0 || _prevCat!==response.data[i].category) {
+                            if (i>0) { _curGroup.prependTo($('select#page_select')); }
+                            _curGroup = $('<optgroup>').attr('label', response.data[i].category);
+                        }
+                        $('<option>').attr('selected', ((page_id && response.data[i].id==page_id)?'selected':false)).attr('access_token',response.data[i].access_token).attr('value', response.data[i].id).attr('link', response.data[i].link).text(response.data[i].name).prependTo(_curGroup);
+                        _prevCat = response.data[i].category;
+                    }
+                    _curGroup.prependTo($('select#page_select'));
+
+                    // варнинг об отсутствии страниц
+                    if ($('select#page_select option').length>0) {
+                        $('div#no-pages-warn').hide();
+                    } else {
+                        $('div#no-pages-warn').show();
+                    }
+                    // Активируем заполненный селектбокс
+                    $('select#page_select').attr('disabled',false);
+                });
+            } else {
+                ls.msg.error(result.sMsgTitle, result.sMsg);
+            }
+
+        },{type:'GET'});
     });
+
 }
 
 // начать тест. 1 - публикация в ленту. 2 - удаление.

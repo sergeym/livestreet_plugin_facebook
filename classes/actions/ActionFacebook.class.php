@@ -35,6 +35,7 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
 
         $this->AddEvent('ajaxtest','EventAjaxTest');
         $this->AddEvent('ajaxsave','EventAjaxSave');
+        $this->AddEvent('get-ajax-extended-token','EventGetAjaxExtendedToken');
     }
 
     /**
@@ -202,5 +203,48 @@ class PluginFacebook_ActionFacebook extends ActionPlugin {
         $this->Viewer_Assign('sMenuItemSelect', 'facebook');
         $this->Viewer_AddBlock('right','actions/ActionFacebook/sidebar.tpl',array('plugin'=>'facebook'));
         $this->Viewer_AddMenu('facebook', Plugin::GetTemplatePath(__CLASS__).'/menu.facebook.tpl');
+    }
+
+    public function EventGetAjaxExtendedToken()
+    {
+        $this->Viewer_SetResponseAjax('json');
+
+        $client_id = GetRequestStr('client_id');
+        $client_secret = GetRequestStr('client_secret');
+        $access_token = GetRequestStr('access_token');
+
+        $sUrl = 'https://graph.facebook.com/oauth/access_token?'.http_build_query(array(
+            'client_id' => $client_id,
+            'client_secret' => $client_secret,
+            'grant_type'=>'fb_exchange_token',
+            'fb_exchange_token'=>$access_token
+        ));
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $sUrl);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $sData = curl_exec($ch);
+        curl_close($ch);
+
+        $aData = json_decode($sData);
+
+        if ($aData && isset($aData->error)) {
+            $this->Message_AddErrorSingle($aData->error->message,$this->Lang_Get('error'));
+            return;
+        } else {
+            parse_str($sData,$aData);
+            if ($aData) {
+                $this->Viewer_AssignAjax('access_token',$aData['access_token']);
+                return;
+            }
+        }
+
+        // какая то фигня
+        $this->Message_AddErrorSingle($this->Lang_Get('error'),$this->Lang_Get('error'));
+
     }
 }

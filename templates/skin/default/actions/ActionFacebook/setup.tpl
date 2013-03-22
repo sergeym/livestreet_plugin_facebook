@@ -60,7 +60,7 @@
                 {$aLang.plugin.facebook.select_facebook_page}<br>
                 <span class="note">{$aLang.plugin.facebook.create_facebook_page}</span>
             </p>
-            <p id="login-button">{$aLang.plugin.facebook.page_list_will_load_automaticly}: <fb:login-button scope="publish_stream,offline_access,manage_pages,user_groups,read_insights" size="medium" onlogin="refreshPages()">Connect</fb:login-button></p>
+            <p id="login-button">{$aLang.plugin.facebook.page_list_will_load_automaticly}: <fb:login-button scope="publish_stream,manage_pages,user_groups,read_insights" size="medium" onlogin="refreshPages()">Connect</fb:login-button></p>
 
             <p id="page-selector">
                 <select id="page_select" disabled="disabled">
